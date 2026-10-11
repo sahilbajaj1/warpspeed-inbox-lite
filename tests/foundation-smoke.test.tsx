@@ -15,5 +15,6 @@ describe('Phase 1 foundation smoke', () => {
 
     expect(getByTestId('home-screen')).toBeTruthy();
     expect(getByText('Inbox Lite')).toBeTruthy();
+    expect(getByText(/Phase 2 design primitives/i)).toBeTruthy();
   });
 });

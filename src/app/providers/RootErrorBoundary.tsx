@@ -10,7 +10,7 @@ function RootErrorBoundaryView({ error, retry }: ErrorBoundaryProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]} accessibilityRole="header">
+      <Text style={[styles.title, { color: colors.textPrimary }]} accessibilityRole="header">
         Something went wrong
       </Text>
       <Text style={[styles.message, { color: colors.textSecondary }]}>
@@ -23,10 +23,10 @@ function RootErrorBoundaryView({ error, retry }: ErrorBoundaryProps) {
         onPress={retry}
         style={({ pressed }) => [
           styles.button,
-          { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+          { backgroundColor: colors.accent, opacity: pressed ? 0.85 : 1 },
         ]}
       >
-        <Text style={styles.buttonLabel}>Try again</Text>
+        <Text style={[styles.buttonLabel, { color: colors.textInverse }]}>Try again</Text>
       </Pressable>
     </View>
   );
@@ -44,13 +44,15 @@ const styles = StyleSheet.create({
     padding: spacingTokens.lg,
   },
   title: {
-    fontSize: typographyTokens.title,
-    fontWeight: '600',
+    fontSize: typographyTokens.title.fontSize,
+    lineHeight: typographyTokens.title.lineHeight,
+    fontWeight: typographyTokens.title.fontWeight,
     marginBottom: spacingTokens.sm,
     textAlign: 'center',
   },
   message: {
-    fontSize: typographyTokens.body,
+    fontSize: typographyTokens.body.fontSize,
+    lineHeight: typographyTokens.body.lineHeight,
     textAlign: 'center',
     marginBottom: spacingTokens.lg,
   },
@@ -63,8 +65,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacingTokens.md,
   },
   buttonLabel: {
-    color: '#FFFFFF',
-    fontSize: typographyTokens.body,
+    fontSize: typographyTokens.body.fontSize,
     fontWeight: '600',
   },
 });
