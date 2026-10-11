@@ -23,6 +23,9 @@ export default function MainLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="starred" />
+      <Stack.Screen name="archived" />
+      <Stack.Screen name="thread/[id]" />
     </Stack>
   );
 }

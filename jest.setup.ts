@@ -1,3 +1,8 @@
+jest.mock('@shopify/flash-list', () => {
+  const { FlatList } = require('react-native') as typeof import('react-native');
+  return { FlashList: FlatList };
+});
+
 jest.mock('expo-router', () => {
   const React = require('react') as typeof import('react');
   return {

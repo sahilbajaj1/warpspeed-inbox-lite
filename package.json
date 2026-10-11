@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "dependencies": {
     "@react-native-community/netinfo": "12.0.1",
+    "@shopify/flash-list": "2.0.2",
+    "@tanstack/react-query": "^5.104.0",
     "expo": "~57.0.27",
     "expo-constants": "~57.0.21",
     "expo-font": "~57.0.4",
@@ -52,7 +54,7 @@
       "<rootDir>/jest.setup.ts"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|@shopify/flash-list|@tanstack/react-query|@tanstack/query-core)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
