@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { Thread } from '@/core/api/schemas';
+import { ActionFailureBanner } from '@/features/inbox/components/ActionFailureBanner';
 import { StarButton } from '@/features/inbox/components/StarButton';
 import { useThreadActions } from '@/features/inbox/hooks/useThreadActions';
 import { AppButton } from '@/shared/components/AppButton';
@@ -44,6 +45,11 @@ export function ThreadActionBar({ thread, testID }: ThreadActionBarProps) {
         />
       </View>
       {actions.isPending ? <PendingActionIndicator label="Syncing changes…" /> : null}
+      <ActionFailureBanner
+        failures={actions.failures}
+        onRetry={actions.retryFailed}
+        onDismiss={actions.dismissFailed}
+      />
     </View>
   );
 }

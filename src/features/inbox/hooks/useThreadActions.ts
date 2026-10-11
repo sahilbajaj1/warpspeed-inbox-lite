@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 import type { Thread } from '@/core/api/schemas';
 import { getThreadActionQueue } from '@/features/inbox/actions/action-queue-runtime';
-import type { ThreadActionField } from '@/features/inbox/actions/types';
+import type { ThreadActionCommand, ThreadActionField } from '@/features/inbox/actions/types';
 
 type PendingFields = Partial<Record<ThreadActionField, boolean>>;
 
@@ -15,11 +15,17 @@ export function useThreadActions(thread: Pick<Thread, 'id' | ThreadActionField> 
     (): PendingFields => ({}),
   );
 
+  const failures = useSyncExternalStore<ThreadActionCommand[]>(
+    (onStoreChange) => queue.subscribe(onStoreChange),
+    () => (thread ? queue.getFailedCommands(thread.id) : []),
+    (): ThreadActionCommand[] => [],
+  );
+
   function enqueue(field: ThreadActionField, value: boolean) {
     if (!thread) {
       return;
     }
-    queue.enqueue({
+    void queue.enqueue({
       threadId: thread.id,
       field,
       value,
@@ -29,7 +35,9 @@ export function useThreadActions(thread: Pick<Thread, 'id' | ThreadActionField> 
 
   return {
     pending,
+    failures,
     isPending: Object.keys(pending).length > 0,
+    hasFailures: failures.length > 0,
     toggleStarred: () => {
       if (!thread) return;
       enqueue('isStarred', !thread.isStarred);
@@ -39,5 +47,13 @@ export function useThreadActions(thread: Pick<Thread, 'id' | ThreadActionField> 
     setRead: (value: boolean) => enqueue('isRead', value),
     markUnread: () => enqueue('isRead', false),
     markRead: () => enqueue('isRead', true),
+    retryFailed: (field: ThreadActionField) => {
+      if (!thread) return;
+      void queue.retryFailed(thread.id, field);
+    },
+    dismissFailed: (field: ThreadActionField) => {
+      if (!thread) return;
+      void queue.dismissFailed(thread.id, field);
+    },
   };
 }

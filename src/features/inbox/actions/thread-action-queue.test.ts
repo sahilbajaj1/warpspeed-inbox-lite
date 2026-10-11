@@ -193,6 +193,92 @@ describe('createThreadActionQueue', () => {
     expect(queueB.peek('thr_1', 'isArchived')).toBeUndefined();
   });
 
+  it('keeps the same key and optimistic UI on rate-limited failures', async () => {
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(inboxQueryKeys.mailbox('inbox'), {
+      pages: [{ threads: [thread()], nextCursor: null }],
+      pageParams: [null],
+    });
+
+    const patchThread = jest.fn(async () => {
+      throw new ApiError({
+        category: 'rate_limited',
+        message: 'slow down',
+        status: 429,
+        retryAfterSeconds: 1,
+      });
+    });
+
+    const queue = createThreadActionQueue({
+      threadsApi: { patchThread } as unknown as ThreadsApi,
+      queryClient,
+      outbox: createMemoryOutboxRepository(),
+      threadCache: createMemoryThreadCacheRepository(),
+    });
+
+    await queue.enqueue({
+      threadId: 'thr_1',
+      field: 'isStarred',
+      value: true,
+      confirmedValue: false,
+    });
+    const key = queue.peek('thr_1', 'isStarred')?.id;
+    await flush();
+
+    expect(queue.peek('thr_1', 'isStarred')?.status).toBe('queued');
+    expect(queue.peek('thr_1', 'isStarred')?.id).toBe(key);
+    expect(
+      queryClient.getQueryData<{ pages: { threads: Thread[] }[] }>(inboxQueryKeys.mailbox('inbox'))
+        ?.pages[0]?.threads[0]?.isStarred,
+    ).toBe(true);
+  });
+
+  it('surfaces permanent failures for retry/dismiss', async () => {
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(inboxQueryKeys.mailbox('inbox'), {
+      pages: [{ threads: [thread()], nextCursor: null }],
+      pageParams: [null],
+    });
+
+    const patchThread = jest.fn<Promise<Thread>, Parameters<ThreadsApi['patchThread']>>(
+      async () => {
+        throw new ApiError({
+          category: 'forbidden',
+          message: 'nope',
+          status: 403,
+        });
+      },
+    );
+
+    const queue = createThreadActionQueue({
+      threadsApi: { patchThread } as unknown as ThreadsApi,
+      queryClient,
+      outbox: createMemoryOutboxRepository(),
+      threadCache: createMemoryThreadCacheRepository(),
+    });
+
+    await queue.enqueue({
+      threadId: 'thr_1',
+      field: 'isStarred',
+      value: true,
+      confirmedValue: false,
+    });
+    await flush();
+
+    expect(queue.getFailedCommands('thr_1')).toHaveLength(1);
+    expect(
+      queryClient.getQueryData<{ pages: { threads: Thread[] }[] }>(inboxQueryKeys.mailbox('inbox'))
+        ?.pages[0]?.threads[0]?.isStarred,
+    ).toBe(false);
+
+    patchThread.mockResolvedValue(thread({ isStarred: true, version: 2 }));
+    await queue.retryFailed('thr_1', 'isStarred');
+    await flush();
+
+    expect(queue.peek('thr_1', 'isStarred')).toBeUndefined();
+    expect(queue.getFailedCommands('thr_1')).toHaveLength(0);
+  });
+
   it('does not claim optimistic UI when outbox persist fails', async () => {
     const queryClient = new QueryClient();
     queryClient.setQueryData(inboxQueryKeys.mailbox('inbox'), {

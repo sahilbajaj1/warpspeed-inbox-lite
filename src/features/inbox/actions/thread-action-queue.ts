@@ -11,6 +11,7 @@ import type {
   ThreadActionField,
   ThreadActionPatch,
 } from '@/features/inbox/actions/types';
+import { isUncertainActionFailure } from '@/features/inbox/actions/uncertain-failure';
 import type { ThreadsApi } from '@/features/inbox/api/threads-api';
 import {
   applyThreadPatchToCaches,
@@ -21,10 +22,13 @@ import type { Thread, ThreadDetail } from '@/core/api/schemas';
 
 type Listener = () => void;
 
+const MAX_RATE_LIMIT_RETRY_MS = 30_000;
+
 export type ThreadActionQueue = {
   subscribe: (listener: Listener) => () => void;
   getCommands: () => ThreadActionCommand[];
   getPendingFields: (threadId: string) => Partial<Record<ThreadActionField, boolean>>;
+  getFailedCommands: (threadId: string) => ThreadActionCommand[];
   enqueue: (input: {
     threadId: string;
     field: ThreadActionField;
@@ -33,8 +37,12 @@ export type ThreadActionQueue = {
   }) => Promise<void>;
   /** Load durable outbox after process restart and re-apply optimistic overlays. */
   hydrate: () => Promise<void>;
-  /** Resume queued work (e.g. after reconnect). */
+  /** Resume queued work (e.g. after reconnect / foreground). */
   flushQueued: () => void;
+  /** Drop a permanent failure after the user dismisses it. */
+  dismissFailed: (threadId: string, field: ThreadActionField) => Promise<void>;
+  /** Re-attempt a permanent failure as a new user intent. */
+  retryFailed: (threadId: string, field: ThreadActionField) => Promise<void>;
   /** Test helper */
   peek: (threadId: string, field: ThreadActionField) => ThreadActionCommand | undefined;
 };
@@ -166,43 +174,85 @@ export function createThreadActionQueue(deps: {
         deps.queryClient.setQueryData(threadDetailQueryKey(command.threadId), undefined);
         await setPrimary(command.threadId, command.field, null);
         await setFollowUp(command.threadId, command.field, null);
-      } else {
-        const uncertain =
-          isApiError(error) && (error.outcomeUncertain || error.category === 'no_connection');
+      } else if (isUncertainActionFailure(error)) {
+        await setPrimary(command.threadId, command.field, {
+          ...command,
+          status: 'queued',
+          errorMessage: toUserMessage(error),
+        });
+        logger.warn('thread action uncertain failure; kept queued with same key', {
+          field: command.field,
+          category: isApiError(error) ? error.category : 'unknown',
+        });
 
-        if (uncertain) {
-          await setPrimary(command.threadId, command.field, {
-            ...command,
-            status: 'queued',
-            errorMessage: toUserMessage(error),
-          });
-          logger.warn('thread action uncertain failure; kept queued with same key', {
-            field: command.field,
-            category: isApiError(error) ? error.category : 'unknown',
-          });
-        } else {
-          applyThreadPatchToCaches(deps.queryClient, command.threadId, {
-            [command.field]: command.revertValue,
-          });
-          await deps.threadCache.applyFieldPatch(command.threadId, {
-            [command.field]: command.revertValue,
-          });
-          await setPrimary(command.threadId, command.field, {
-            ...command,
-            status: 'failed',
-            errorMessage: toUserMessage(error),
-          });
-          logger.warn('thread action permanent failure', {
-            field: command.field,
-            category: isApiError(error) ? error.category : 'unknown',
-          });
+        // Honor Retry-After for 429 without inventing a new idempotency key (A-04).
+        if (
+          isApiError(error) &&
+          error.category === 'rate_limited' &&
+          typeof error.retryAfterSeconds === 'number' &&
+          error.retryAfterSeconds > 0
+        ) {
+          const delayMs = Math.min(error.retryAfterSeconds * 1000, MAX_RATE_LIMIT_RETRY_MS);
+          setTimeout(() => {
+            void processKey(key);
+          }, delayMs);
         }
+      } else {
+        applyThreadPatchToCaches(deps.queryClient, command.threadId, {
+          [command.field]: command.revertValue,
+        });
+        await deps.threadCache.applyFieldPatch(command.threadId, {
+          [command.field]: command.revertValue,
+        });
+        await setPrimary(command.threadId, command.field, {
+          ...command,
+          status: 'failed',
+          errorMessage: toUserMessage(error),
+        });
+        logger.warn('thread action permanent failure', {
+          field: command.field,
+          category: isApiError(error) ? error.category : 'unknown',
+        });
       }
     } finally {
       inFlightKeys.delete(key);
     }
 
     if (shouldProcessFollowUp) {
+      void processKey(key);
+    }
+  }
+
+  async function enqueue(input: {
+    threadId: string;
+    field: ThreadActionField;
+    value: boolean;
+    confirmedValue: boolean;
+  }): Promise<void> {
+    const { threadId, field, value, confirmedValue } = input;
+    const key = actionQueueKey(threadId, field);
+    const existing = commands.get(key);
+    const result = coalesceThreadAction({
+      existing,
+      threadId,
+      field,
+      value,
+      confirmedValue,
+    });
+
+    if (existing?.status === 'in_flight') {
+      // Persist follow-up before acknowledging UI.
+      await setFollowUp(threadId, field, result.next);
+      await applyOptimistic(threadId, field, value);
+      return;
+    }
+
+    await setFollowUp(threadId, field, null);
+    await setPrimary(threadId, field, result.next);
+    // Only claim optimistic UI after durable write succeeds.
+    await applyOptimistic(threadId, field, value);
+
+    if (result.next) {
       void processKey(key);
     }
   }
@@ -240,8 +290,33 @@ export function createThreadActionQueue(deps: {
       return stable;
     },
 
+    getFailedCommands(threadId) {
+      return [...commands.values()].filter(
+        (command) => command.threadId === threadId && command.status === 'failed',
+      );
+    },
+
     peek(threadId, field) {
       return commands.get(actionQueueKey(threadId, field));
+    },
+
+    async dismissFailed(threadId, field) {
+      const existing = commands.get(actionQueueKey(threadId, field));
+      if (!existing || existing.status !== 'failed') {
+        return;
+      }
+      await setPrimary(threadId, field, null);
+    },
+
+    async retryFailed(threadId, field) {
+      const existing = commands.get(actionQueueKey(threadId, field));
+      if (!existing || existing.status !== 'failed') {
+        return;
+      }
+      const value = existing.value;
+      const confirmedValue = existing.revertValue;
+      await setPrimary(threadId, field, null);
+      await enqueue({ threadId, field, value, confirmedValue });
     },
 
     async hydrate() {
@@ -287,33 +362,7 @@ export function createThreadActionQueue(deps: {
       }
     },
 
-    async enqueue({ threadId, field, value, confirmedValue }) {
-      const key = actionQueueKey(threadId, field);
-      const existing = commands.get(key);
-      const result = coalesceThreadAction({
-        existing,
-        threadId,
-        field,
-        value,
-        confirmedValue,
-      });
-
-      if (existing?.status === 'in_flight') {
-        // Persist follow-up before acknowledging UI.
-        await setFollowUp(threadId, field, result.next);
-        await applyOptimistic(threadId, field, value);
-        return;
-      }
-
-      await setFollowUp(threadId, field, null);
-      await setPrimary(threadId, field, result.next);
-      // Only claim optimistic UI after durable write succeeds.
-      await applyOptimistic(threadId, field, value);
-
-      if (result.next) {
-        void processKey(key);
-      }
-    },
+    enqueue,
   };
 }
 

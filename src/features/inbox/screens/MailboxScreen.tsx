@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { runForegroundRecovery } from '@/core/sync/foreground-recovery';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { InboxEmptyState } from '@/features/inbox/components/InboxEmptyState';
 import { InboxErrorState } from '@/features/inbox/components/InboxErrorState';
@@ -84,7 +85,10 @@ export function MailboxScreen({ view }: MailboxScreenProps) {
           }}
           refreshing={isRefetching && !isFetchingNextPage}
           onRefresh={() => {
-            void refetch();
+            void (async () => {
+              await runForegroundRecovery();
+              await refetch();
+            })();
           }}
           isFetchingNextPage={isFetchingNextPage}
           hasNextPage={Boolean(hasNextPage)}
@@ -92,7 +96,10 @@ export function MailboxScreen({ view }: MailboxScreenProps) {
             <InboxEmptyState
               view={view}
               onRefresh={() => {
-                void refetch();
+                void (async () => {
+                  await runForegroundRecovery();
+                  await refetch();
+                })();
               }}
             />
           }
