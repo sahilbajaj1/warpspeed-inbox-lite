@@ -48,9 +48,12 @@ See `docs/dev-tools.md`.
 
 - Live chaos/burst **observations** (tooling ready; blocked on credentials) — `docs/chaos-observations.md`  
 - Screen recording ≤3 minutes (C-09) — pending live verification  
-- Maestro E2E, deep a11y audit, burst perf tuning  
+- Declared device/OS for the recording (C-03 finalize)  
+- Maestro E2E; full VoiceOver / Dynamic Type device audit  
 - Compose / reply / search (out of scope)  
 - Perfect offline of the full ~3k corpus on first launch (caches fetched/opened data only)
+
+Acceptance gate: `docs/acceptance-checklist.md` · matrix sync: `docs/requirements-matrix.md`
 
 ## Key decisions
 
@@ -68,7 +71,7 @@ More detail: `docs/architecture.md`, `docs/assumptions.md`, `docs/requirements-m
 
 ## AI usage
 
-Work was done with Cursor agents, phased 0→11. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory.
+Work was done with Cursor agents, phased 0→14. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory.
 
 ## Test results (automated)
 
@@ -89,7 +92,7 @@ Live sandbox / chaos / burst: **not yet recorded** (no credentials in environmen
 
 ## Time
 
-Focused implementation across Phases 0–13. Honest wall-clock will be finalized at submission; do not treat this README as claiming a finished live demo until chaos notes + recording exist.
+Focused implementation across Phases 0–14. Honest wall-clock will be finalized at submission; do not treat this README as claiming a finished live demo until chaos notes + recording exist.
 
 ## Platform
 
