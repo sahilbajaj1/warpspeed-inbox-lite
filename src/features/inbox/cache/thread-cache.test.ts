@@ -60,4 +60,27 @@ describe('thread cache helpers', () => {
       version: 2,
     });
   });
+
+  it('removes archived threads from the inbox mailbox cache', () => {
+    const client = new QueryClient();
+    client.setQueryData(inboxQueryKeys.mailbox('inbox'), {
+      pages: [{ threads: [thread({ id: 'thr_1' })], nextCursor: null }],
+      pageParams: [null],
+    });
+    client.setQueryData(inboxQueryKeys.mailbox('archived'), {
+      pages: [{ threads: [], nextCursor: null }],
+      pageParams: [null],
+    });
+
+    applyThreadPatchToCaches(client, 'thr_1', { isArchived: true });
+
+    const inbox = client.getQueryData<{ pages: { threads: Thread[] }[] }>(
+      inboxQueryKeys.mailbox('inbox'),
+    );
+    const archived = client.getQueryData<{ pages: { threads: Thread[] }[] }>(
+      inboxQueryKeys.mailbox('archived'),
+    );
+    expect(inbox?.pages[0]?.threads).toHaveLength(0);
+    expect(archived?.pages[0]?.threads[0]?.id).toBe('thr_1');
+  });
 });

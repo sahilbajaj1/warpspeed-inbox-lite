@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Thread } from '@/core/api/schemas';
+import { StarButton } from '@/features/inbox/components/StarButton';
+import { useThreadActions } from '@/features/inbox/hooks/useThreadActions';
 import {
   formatThreadTimestamp,
   getThreadSenderLabel,
@@ -18,6 +20,7 @@ export type ThreadListItemProps = {
 
 export function ThreadListItem({ thread, onPress, testID }: ThreadListItemProps) {
   const { colors } = useTheme();
+  const actions = useThreadActions(thread);
   const unread = !thread.isRead;
   const sender = getThreadSenderLabel(thread);
   const timestamp = formatThreadTimestamp(thread.lastMessageAt);
@@ -68,17 +71,18 @@ export function ThreadListItem({ thread, onPress, testID }: ThreadListItemProps)
         <AppText variant="caption" tone="secondary" numberOfLines={2}>
           {thread.snippet}
         </AppText>
-        {thread.isStarred ? (
-          <View
-            style={[styles.starBadge, { backgroundColor: colors.accentMuted }]}
-            accessibilityLabel="Starred"
-          >
-            <AppText variant="caption" tone="accent">
-              Starred
-            </AppText>
-          </View>
+        {actions.isPending ? (
+          <AppText variant="caption" tone="secondary">
+            Syncing…
+          </AppText>
         ) : null}
       </View>
+      <StarButton
+        starred={thread.isStarred}
+        pending={Boolean(actions.pending.isStarred)}
+        onPress={actions.toggleStarred}
+        testID={testID ? `${testID}-star` : undefined}
+      />
     </Pressable>
   );
 }
@@ -114,12 +118,5 @@ const styles = StyleSheet.create({
   },
   subject: {
     flexShrink: 1,
-  },
-  starBadge: {
-    alignSelf: 'flex-start',
-    marginTop: spacingTokens.xs,
-    paddingHorizontal: spacingTokens.sm,
-    paddingVertical: 2,
-    borderRadius: radiusTokens.sm,
   },
 });

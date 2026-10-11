@@ -27,7 +27,7 @@ describe('ThreadListItem', () => {
     expect(screen.getByText('Priya Shah')).toBeTruthy();
     expect(screen.getByText('Board pack')).toBeTruthy();
     expect(screen.getByLabelText(/Unread/i)).toBeTruthy();
-    expect(screen.getByText('Starred')).toBeTruthy();
+    expect(screen.getByLabelText('Unstar')).toBeTruthy();
 
     fireEvent.press(screen.getByTestId('row'));
     expect(onPress).toHaveBeenCalledWith(sampleThread);
@@ -44,6 +44,6 @@ describe('ThreadListItem', () => {
     );
 
     expect(screen.getByLabelText(/^Priya Shah/i)).toBeTruthy();
-    expect(screen.queryByText('Starred')).toBeNull();
+    expect(screen.getByLabelText('Star')).toBeTruthy();
   });
 });

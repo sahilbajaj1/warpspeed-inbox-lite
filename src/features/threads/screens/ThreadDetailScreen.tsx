@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { isApiError, toUserMessage } from '@/core/api/errors';
+import { ThreadActionBar } from '@/features/inbox/components/ThreadActionBar';
 import { MessageCard } from '@/features/threads/components/MessageCard';
 import { ThreadHeader } from '@/features/threads/components/ThreadHeader';
 import { useMarkThreadRead } from '@/features/threads/hooks/useMarkThreadRead';
@@ -71,6 +72,9 @@ export function ThreadDetailScreen({ threadId }: ThreadDetailScreenProps) {
         isMarkingRead={markRead.isPending}
         onBack={() => router.back()}
       />
+      <View style={styles.actions}>
+        <ThreadActionBar thread={data} testID="thread-action-bar" />
+      </View>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
@@ -102,6 +106,9 @@ const styles = StyleSheet.create({
     padding: spacingTokens.md,
     gap: spacingTokens.md,
     justifyContent: 'center',
+  },
+  actions: {
+    paddingHorizontal: spacingTokens.md,
   },
   content: {
     paddingHorizontal: spacingTokens.md,

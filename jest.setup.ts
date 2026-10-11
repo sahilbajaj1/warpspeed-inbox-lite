@@ -70,4 +70,10 @@ beforeEach(() => {
     __resetAuthRuntimeForTests: () => void;
   };
   __resetAuthRuntimeForTests();
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { __resetThreadActionQueueForTests } = require('@/features/inbox/actions/action-queue-runtime') as {
+    __resetThreadActionQueueForTests: () => void;
+  };
+  __resetThreadActionQueueForTests();
 });

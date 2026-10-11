@@ -3,6 +3,8 @@ import type { InfiniteData, QueryClient } from '@tanstack/react-query';
 import type { Thread, ThreadDetail } from '@/core/api/schemas';
 import type { ThreadPage } from '@/features/inbox/api/threads-api';
 import { inboxQueryKeys } from '@/features/inbox/query-keys';
+import type { MailboxView } from '@/features/inbox/models/mailbox';
+import { MAILBOX_VIEWS } from '@/features/inbox/models/mailbox';
 
 export const threadDetailQueryKey = (id: string) =>
   [...inboxQueryKeys.all, 'thread', id] as const;
@@ -16,42 +18,99 @@ function patchThreadFields(thread: Thread, patch: Partial<Thread>): Thread {
   return next;
 }
 
+function belongsInMailbox(view: MailboxView, thread: Thread): boolean {
+  if (view === 'inbox') {
+    return !thread.isArchived;
+  }
+  if (view === 'starred') {
+    return thread.isStarred;
+  }
+  return thread.isArchived;
+}
+
+function findThreadInCaches(queryClient: QueryClient, threadId: string): Thread | undefined {
+  const detail = queryClient.getQueryData<ThreadDetail>(threadDetailQueryKey(threadId));
+  if (detail) {
+    return detail;
+  }
+
+  for (const view of MAILBOX_VIEWS) {
+    const data = queryClient.getQueryData<InfiniteData<ThreadPage>>(inboxQueryKeys.mailbox(view));
+    const found = data?.pages.flatMap((page) => page.threads).find((thread) => thread.id === threadId);
+    if (found) {
+      return found;
+    }
+  }
+  return undefined;
+}
+
 /** Apply a field patch across mailbox infinite queries and optional detail cache. */
 export function applyThreadPatchToCaches(
   queryClient: QueryClient,
   threadId: string,
   patch: Partial<Thread>,
 ): void {
-  queryClient.setQueriesData<InfiniteData<ThreadPage>>(
-    { queryKey: [...inboxQueryKeys.all, 'mailbox'] },
-    (existing) => {
+  const current = findThreadInCaches(queryClient, threadId);
+  if (!current) {
+    return;
+  }
+
+  if (
+    patch.version !== undefined &&
+    typeof current.version === 'number' &&
+    patch.version < current.version
+  ) {
+    return;
+  }
+
+  const next = patchThreadFields(current, patch);
+
+  for (const view of MAILBOX_VIEWS) {
+    queryClient.setQueryData<InfiniteData<ThreadPage>>(inboxQueryKeys.mailbox(view), (existing) => {
       if (!existing) {
         return existing;
       }
-      let changed = false;
-      const pages = existing.pages.map((page) => {
-        let pageChanged = false;
-        const threads = page.threads.map((thread) => {
-          if (thread.id !== threadId) {
-            return thread;
-          }
-          // Ignore older confirmed versions when patch carries a version.
-          if (
-            patch.version !== undefined &&
-            typeof thread.version === 'number' &&
-            patch.version < thread.version
-          ) {
-            return thread;
-          }
-          pageChanged = true;
-          changed = true;
-          return patchThreadFields(thread, patch);
-        });
-        return pageChanged ? { ...page, threads } : page;
-      });
-      return changed ? { ...existing, pages } : existing;
-    },
-  );
+
+      const withoutThread = existing.pages.map((page) => ({
+        ...page,
+        threads: page.threads.filter((thread) => thread.id !== threadId),
+      }));
+
+      if (!belongsInMailbox(view, next)) {
+        const changed = existing.pages.some((page) =>
+          page.threads.some((thread) => thread.id === threadId),
+        );
+        return changed ? { ...existing, pages: withoutThread } : existing;
+      }
+
+      const alreadyPresent = existing.pages.some((page) =>
+        page.threads.some((thread) => thread.id === threadId),
+      );
+
+      if (alreadyPresent) {
+        return {
+          ...existing,
+          pages: existing.pages.map((page) => ({
+            ...page,
+            threads: page.threads.map((thread) => (thread.id === threadId ? next : thread)),
+          })),
+        };
+      }
+
+      if (withoutThread.length === 0) {
+        return {
+          ...existing,
+          pages: [{ threads: [next], nextCursor: null }],
+        };
+      }
+
+      const [first, ...rest] = withoutThread;
+      return {
+        ...existing,
+        pages: [{ ...first, threads: [next, ...first.threads] }, ...rest],
+      };
+    });
+  }
 
   queryClient.setQueryData<ThreadDetail>(threadDetailQueryKey(threadId), (existing) => {
     if (!existing) {
