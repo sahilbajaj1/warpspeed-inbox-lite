@@ -24,10 +24,14 @@ function readOptionalBoolean(value: string | undefined, fallback: boolean): bool
   return normalized === 'true' || normalized === '1' || normalized === 'yes';
 }
 
+/** Above PDF worst-case latency (10s) with headroom for slow mobile networks. */
+const DEFAULT_REQUEST_TIMEOUT_MS = 20_000;
+
 export type AppConfig = {
   readonly apiBaseUrl: string;
   readonly socketUrl: string;
   readonly enableDevLogs: boolean;
+  readonly requestTimeoutMs: number;
 };
 
 export const appConfig: AppConfig = {
@@ -38,4 +42,5 @@ export const appConfig: AppConfig = {
     readOptionalString(process.env.EXPO_PUBLIC_SOCKET_URL, DEFAULT_SOCKET_URL),
   ),
   enableDevLogs: readOptionalBoolean(process.env.EXPO_PUBLIC_ENABLE_DEV_LOGS, __DEV__),
+  requestTimeoutMs: DEFAULT_REQUEST_TIMEOUT_MS,
 };

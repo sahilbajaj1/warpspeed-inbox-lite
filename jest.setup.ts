@@ -8,3 +8,12 @@ jest.mock('@react-native-community/netinfo', () => ({
     }),
   ),
 }));
+
+jest.mock('@/core/logging/logger', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));

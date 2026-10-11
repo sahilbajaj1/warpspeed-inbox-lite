@@ -8,6 +8,7 @@ describe('Phase 1 foundation smoke', () => {
   it('exposes typed sandbox defaults from app config', () => {
     expect(appConfig.apiBaseUrl).toBe('https://sandbox3.staging.iamwarpspeed.com/v1');
     expect(appConfig.socketUrl).toBe('https://sandbox3.staging.iamwarpspeed.com');
+    expect(appConfig.requestTimeoutMs).toBeGreaterThanOrEqual(15_000);
   });
 
   it('renders the home placeholder inside providers', async () => {
