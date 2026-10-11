@@ -2,7 +2,9 @@ import { useRouter } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { isApiError, toUserMessage } from '@/core/api/errors';
+import { CreditsBadge } from '@/features/credits/CreditsBadge';
 import { ThreadActionBar } from '@/features/inbox/components/ThreadActionBar';
+import { SummaryPanel } from '@/features/summary/SummaryPanel';
 import { MessageCard } from '@/features/threads/components/MessageCard';
 import { ThreadHeader } from '@/features/threads/components/ThreadHeader';
 import { useMarkThreadRead } from '@/features/threads/hooks/useMarkThreadRead';
@@ -73,13 +75,19 @@ export function ThreadDetailScreen({ threadId }: ThreadDetailScreenProps) {
         onBack={() => router.back()}
       />
       <View style={styles.actions}>
-        <ThreadActionBar thread={data} testID="thread-action-bar" />
+        <View style={styles.actionsRow}>
+          <View style={styles.actionBarFlex}>
+            <ThreadActionBar thread={data} testID="thread-action-bar" />
+          </View>
+          <CreditsBadge />
+        </View>
       </View>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled
       >
+        <SummaryPanel threadId={threadId} />
         {messages.length === 0 ? (
           <AppText tone="secondary">This thread has no messages.</AppText>
         ) : (
@@ -109,6 +117,14 @@ const styles = StyleSheet.create({
   },
   actions: {
     paddingHorizontal: spacingTokens.md,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacingTokens.sm,
+  },
+  actionBarFlex: {
+    flex: 1,
   },
   content: {
     paddingHorizontal: spacingTokens.md,

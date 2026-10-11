@@ -1,4 +1,5 @@
 import { createApiClient, type ApiClient, type TokenProvider } from '@/core/api/client';
+import { getCreditsStore } from '@/features/credits/credits-store';
 
 const unboundTokens: TokenProvider = {
   getAccessToken: async () => null,
@@ -22,5 +23,8 @@ export const apiClient: ApiClient = createApiClient({
       tokenProvider.refreshAccessToken
         ? tokenProvider.refreshAccessToken()
         : Promise.resolve(false),
+  },
+  onUserBalance: (balance) => {
+    getCreditsStore().setBalance(balance, 'api');
   },
 });

@@ -68,6 +68,12 @@ jest.mock('socket.io-client', () => ({
   })),
 }));
 
+jest.mock('expo/fetch', () => ({
+  fetch: jest.fn(async () => {
+    throw new Error('expo/fetch mock: provide fetchImpl in tests');
+  }),
+}));
+
 jest.mock('@/core/logging/logger', () => ({
   logger: {
     debug: jest.fn(),

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CreditsBadge } from '@/features/credits/CreditsBadge';
 import { MailboxSwitcher } from '@/features/inbox/components/MailboxSwitcher';
 import { MAILBOX_LABELS, type MailboxView } from '@/features/inbox/models/mailbox';
 import { MIN_TOUCH_TARGET_SIZE } from '@/shared/a11y/conventions';
@@ -23,17 +24,20 @@ export function InboxHeader({ view, onViewChange, onSignOut }: InboxHeaderProps)
         title={MAILBOX_LABELS[view]}
         subtitle="Newest first · scrolls to load more"
         rightSlot={
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Sign out"
-            testID="logout-button"
-            onPress={onSignOut}
-            style={styles.signOut}
-          >
-            <AppText tone="accent" variant="label">
-              Sign out
-            </AppText>
-          </Pressable>
+          <View style={styles.right}>
+            <CreditsBadge />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Sign out"
+              testID="logout-button"
+              onPress={onSignOut}
+              style={styles.signOut}
+            >
+              <AppText tone="accent" variant="label">
+                Sign out
+              </AppText>
+            </Pressable>
+          </View>
         }
       />
       <MailboxSwitcher value={view} onChange={onViewChange} testID="mailbox-switcher" />
@@ -45,6 +49,11 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacingTokens.md,
     paddingBottom: spacingTokens.sm,
+    gap: spacingTokens.sm,
+  },
+  right: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacingTokens.sm,
   },
   signOut: {
