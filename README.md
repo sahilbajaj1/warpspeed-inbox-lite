@@ -42,18 +42,18 @@ See `docs/dev-tools.md`.
 - SQLite durable outbox + offline mailbox/detail cache  
 - Socket.IO realtime + `/sync` catch-up with version/tombstones  
 - AI summary SSE streaming + shared credits badge  
+- Resilience: uncertain 5xx keep-queued, 429 Retry-After, foreground recovery  
+- A11y basics: reduce-motion indicators, non-color unread cues, Dynamic Type caps  
 - Dev helpers for `/dev/reset`, `/dev/chaos`, `/dev/burst` with restore-to-0  
 
 ## What is not built / incomplete
 
 - Live chaos/burst **observations** (tooling ready; blocked on credentials) — `docs/chaos-observations.md`  
-- Screen recording ≤3 minutes (C-09) — pending live verification  
+- Screen recording ≤3 minutes (C-09) — script in `docs/demo-recording.md`  
 - Declared device/OS for the recording (C-03 finalize)  
 - Maestro E2E; full VoiceOver / Dynamic Type device audit  
 - Compose / reply / search (out of scope)  
 - Perfect offline of the full ~3k corpus on first launch (caches fetched/opened data only)
-
-Acceptance gate: `docs/acceptance-checklist.md` · matrix sync: `docs/requirements-matrix.md`
 
 ## Key decisions
 
@@ -67,18 +67,32 @@ Acceptance gate: `docs/acceptance-checklist.md` · matrix sync: `docs/requiremen
 | Credits | Authoritative remote only | No local −1 on tap (avoids double-decrement) |
 | Chaos | `withChaos` / CLI `finally` restore | Never leave sandbox failure injection on |
 
-More detail: `docs/architecture.md`, `docs/assumptions.md`, `docs/requirements-matrix.md`.
+## Docs index
+
+| Doc | Purpose |
+| --- | --- |
+| `docs/architecture.md` | System design |
+| `docs/requirements-matrix.md` | PDF traceability + status |
+| `docs/acceptance-checklist.md` | Code vs live acceptance gate |
+| `docs/assumptions.md` | Ambiguity resolutions |
+| `docs/resilience.md` | Uncertain writes / 429 / recovery |
+| `docs/a11y-perf.md` | Accessibility + FlashList notes |
+| `docs/demo-recording.md` | ≤3m recording shot list |
+| `docs/chaos-observations.md` | Live chaos/burst results (pending) |
+| `docs/dev-tools.md` | Sandbox CLI helpers |
+| `docs/html-email-rendering.md` | WebView HTML strategy |
+| `ai/` | Uncurated phase working notes |
 
 ## AI usage
 
-Work was done with Cursor agents, phased 0→14. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory.
+Work was done with Cursor agents, phased 0→15. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims.
 
 ## Test results (automated)
 
 ```text
 npm run typecheck  → pass
 npm run lint       → pass
-npm test           → pass (see latest CI/local run)
+npm test           → pass (121)
 ```
 
 Live sandbox / chaos / burst: **not yet recorded** (no credentials in environment at implementation time).
@@ -86,14 +100,14 @@ Live sandbox / chaos / burst: **not yet recorded** (no credentials in environmen
 ## What I would do next week
 
 1. Run reset/chaos/burst against the assigned account; fill `docs/chaos-observations.md`  
-2. Capture a ≤3m recording of login → inbox → detail → star/archive → summary  
-3. Validate FlashList blank-area feel under live burst (tuning already in Phase 13 / `docs/a11y-perf.md`)  
+2. Capture a ≤3m recording per `docs/demo-recording.md`  
+3. Validate FlashList blank-area feel under live burst  
 4. Probe live SSE event names if the flexible parser needs a narrow fix  
 
 ## Time
 
-Focused implementation across Phases 0–14. Honest wall-clock will be finalized at submission; do not treat this README as claiming a finished live demo until chaos notes + recording exist.
+Brief target: **8–12 focused hours**. Implementation spans Phases 0–15 as incremental commits on `master` (see git log). Honest wall-clock for the submission package will be filled after the live demo + recording; this README does **not** invent a finished live-demo hour count.
 
 ## Platform
 
-Intended for iOS Simulator and/or Android Emulator via Expo. Exact device/OS used for the submission recording will be declared when recorded.
+Intended for **iOS Simulator** and/or **Android Emulator** via Expo. Exact device/OS used for the submission recording will be declared here when recorded (C-03 / C-09).
