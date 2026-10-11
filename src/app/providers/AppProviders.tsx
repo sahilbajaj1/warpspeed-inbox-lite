@@ -3,6 +3,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
 import { ConnectivityProvider } from '@/core/connectivity/ConnectivityProvider';
 import { AppLifecycleProvider } from '@/core/lifecycle/AppLifecycleProvider';
+import { AuthProvider } from '@/features/auth/AuthProvider';
 import { ThemeProvider } from '@/shared/theme/ThemeProvider';
 
 const defaultInitialMetrics: Metrics = {
@@ -15,7 +16,9 @@ export function AppProviders({ children }: PropsWithChildren) {
     <SafeAreaProvider initialMetrics={defaultInitialMetrics}>
       <ThemeProvider>
         <ConnectivityProvider>
-          <AppLifecycleProvider>{children}</AppLifecycleProvider>
+          <AppLifecycleProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </AppLifecycleProvider>
         </ConnectivityProvider>
       </ThemeProvider>
     </SafeAreaProvider>

@@ -1,4 +1,5 @@
-export { createApiClient, apiClient, type ApiClient, type ApiClientOptions, type TokenProvider } from '@/core/api/client';
+export { createApiClient, type ApiClient, type ApiClientOptions, type TokenProvider } from '@/core/api/client';
+export { apiClient, bindApiTokenProvider } from '@/core/api/api-singleton';
 export {
   ApiError,
   isApiError,

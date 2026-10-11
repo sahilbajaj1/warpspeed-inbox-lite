@@ -295,6 +295,3 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     },
   };
 }
-
-/** Shared app client — tokens/refresh wired in Phase 4. */
-export const apiClient = createApiClient();
