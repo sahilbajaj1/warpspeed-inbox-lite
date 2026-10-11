@@ -2,8 +2,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, type PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
-import { DatabaseProvider } from '@/app/providers/DatabaseProvider';
-import { SyncProvider } from '@/app/providers/SyncProvider';
+import { DatabaseProvider } from '@/providers/DatabaseProvider';
+import { SyncProvider } from '@/providers/SyncProvider';
 import { ConnectivityProvider } from '@/core/connectivity/ConnectivityProvider';
 import { AppLifecycleProvider } from '@/core/lifecycle/AppLifecycleProvider';
 import { appQueryClient, wireReactQueryLifecycle } from '@/core/query/query-client';

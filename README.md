@@ -77,7 +77,8 @@ See `docs/dev-tools.md`.
 | `docs/a11y-perf.md` | Accessibility + FlashList notes |
 | `docs/demo-recording.md` | ≤3m recording shot list |
 | `docs/final-review.md` | Risks, cuts, submission blockers |
-| `docs/chaos-observations.md` | Live chaos/burst results (pending) |
+| `docs/chaos-observations.md` | Live chaos/burst API observations |
+| `docs/FINAL_ENGINEERING_AUDIT.md` | Final principal audit / release readiness |
 | `docs/dev-tools.md` | Sandbox CLI helpers |
 | `docs/html-email-rendering.md` | WebView HTML strategy |
 | `ai/` | Uncurated phase working notes |
@@ -100,8 +101,8 @@ Live sandbox (2026-10-11 API smoke): reset OK; chaos latency/5xx observed then r
 
 1. Validate FlashList blank-area feel while scrolling during/after a live burst on device  
 2. Film one offline → reconnect outbox flush as a short addendum if reviewers want it  
-3. Move `src/app/providers/*` outside the route tree to silence Expo Router default-export warnings  
-4. Optional Maestro smoke for login → open thread  
+3. Optional Maestro smoke for login → open thread  
+4. Film offline → reconnect outbox flush if reviewers want a device clip  
 
 ## Time
 

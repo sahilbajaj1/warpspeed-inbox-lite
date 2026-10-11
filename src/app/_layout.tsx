@@ -3,8 +3,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { AppProviders } from '@/app/providers/AppProviders';
-import { RootErrorBoundary } from '@/app/providers/RootErrorBoundary';
+import { AppProviders } from '@/providers/AppProviders';
+import { RootErrorBoundary } from '@/providers/RootErrorBoundary';
 
 export { RootErrorBoundary as ErrorBoundary };
 

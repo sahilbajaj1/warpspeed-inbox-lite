@@ -1,6 +1,6 @@
 import { render, waitFor } from '@testing-library/react-native';
 
-import { AppProviders } from '@/app/providers/AppProviders';
+import { AppProviders } from '@/providers/AppProviders';
 import { appConfig } from '@/core/config/app-config';
 import LoginScreen from '@/app/(auth)/login';
 

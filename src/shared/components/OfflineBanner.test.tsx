@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 
-import { AppProviders } from '@/app/providers/AppProviders';
+import { AppProviders } from '@/providers/AppProviders';
 import { OfflineBanner } from '@/shared/components/OfflineBanner';
 
 describe('OfflineBanner', () => {

@@ -63,7 +63,7 @@ export function MessageBody({ bodyHtml, bodyText, testID }: MessageBodyProps) {
       ]}
     >
       <WebView
-        originWhitelist={['*']}
+        originWhitelist={['about:blank', 'about:srcdoc']}
         source={htmlSource}
         style={styles.webview}
         scrollEnabled

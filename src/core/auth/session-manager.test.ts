@@ -166,7 +166,23 @@ describe('createSessionManager', () => {
     expect(onSessionCleared).toHaveBeenCalled();
   });
 
-  it('refresh failure clears session safely', async () => {
+  it('transient refresh failure keeps the stored refresh token for retry', async () => {
+    const storage = createMemoryTokenStorage('refresh-1');
+    const authApi = createAuthApiMock({
+      refresh: jest.fn(async () => {
+        throw new ApiError({ category: 'no_connection', message: 'offline', retryable: true });
+      }),
+    });
+    const manager = createSessionManager({ authApi, tokenStorage: storage });
+
+    await manager.bootstrap();
+
+    expect(manager.getSnapshot().status).toBe('unauthenticated');
+    // Must not discard a still-valid refresh token on connectivity blips.
+    expect(await storage.getRefreshToken()).toBe('refresh-1');
+  });
+
+  it('server_failure during refresh does not clear the stored refresh token', async () => {
     const storage = createMemoryTokenStorage('refresh-1');
     const authApi = createAuthApiMock({
       refresh: jest.fn(async () => {
@@ -178,7 +194,7 @@ describe('createSessionManager', () => {
     await manager.bootstrap();
 
     expect(manager.getSnapshot().status).toBe('unauthenticated');
-    expect(await storage.getRefreshToken()).toBeNull();
+    expect(await storage.getRefreshToken()).toBe('refresh-1');
   });
 
   it('logout clears local session even if the logout API fails', async () => {

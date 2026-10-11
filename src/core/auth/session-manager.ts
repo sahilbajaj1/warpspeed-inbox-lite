@@ -131,11 +131,14 @@ export function createSessionManager(options: SessionManagerOptions): SessionMan
         return false;
       }
 
-      const reused =
+      // Only auth failures must revoke the session. Transient/network/5xx on refresh
+      // must NOT discard a potentially still-valid refresh token (AUTH-06 is about reuse,
+      // not about connectivity blips).
+      const authFailure =
         isApiError(error) &&
         (error.code === 'refresh_token_reused' || error.category === 'unauthorized');
 
-      if (reused) {
+      if (authFailure) {
         await clearSession(
           error instanceof ApiError && error.code === 'refresh_token_reused'
             ? 'refresh_token_reused'
@@ -144,10 +147,9 @@ export function createSessionManager(options: SessionManagerOptions): SessionMan
         return false;
       }
 
-      logger.warn('refresh failed', {
+      logger.warn('refresh failed transiently; keeping stored refresh token', {
         category: isApiError(error) ? error.category : 'unknown',
       });
-      await clearSession('refresh_failed');
       return false;
     }
   }
