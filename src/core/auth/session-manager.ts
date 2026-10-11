@@ -16,7 +16,7 @@ export type SessionManagerOptions = {
   tokenStorage: TokenStorage;
   /** Clock skew / proactive refresh buffer before access expiry. */
   expirySkewMs?: number;
-  onSessionCleared?: () => void;
+  onSessionCleared?: () => void | Promise<void>;
   now?: () => number;
 };
 
@@ -83,7 +83,7 @@ export function createSessionManager(options: SessionManagerOptions): SessionMan
     await options.tokenStorage.clearRefreshToken();
     setStatus('unauthenticated');
     logger.info('session cleared', { reason });
-    options.onSessionCleared?.();
+    await options.onSessionCleared?.();
   }
 
   async function persistAndApply(tokens: AuthTokens, generation: number): Promise<boolean> {
@@ -218,7 +218,7 @@ export function createSessionManager(options: SessionManagerOptions): SessionMan
       clearMemoryTokens();
       await options.tokenStorage.clearRefreshToken();
       setStatus('unauthenticated');
-      options.onSessionCleared?.();
+      await options.onSessionCleared?.();
 
       if (token && generation >= 0) {
         try {

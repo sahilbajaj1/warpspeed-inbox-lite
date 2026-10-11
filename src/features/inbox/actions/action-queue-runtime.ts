@@ -1,4 +1,8 @@
 import { apiClient } from '@/core/api/api-singleton';
+import {
+  getOutboxRepository,
+  getThreadCacheRepository,
+} from '@/core/database/database-runtime';
 import { appQueryClient } from '@/core/query/query-client';
 import { createThreadsApi } from '@/features/inbox/api/threads-api';
 import {
@@ -13,11 +17,18 @@ export function getThreadActionQueue(): ThreadActionQueue {
     queue = createThreadActionQueue({
       threadsApi: createThreadsApi(apiClient),
       queryClient: appQueryClient,
+      outbox: getOutboxRepository(),
+      threadCache: getThreadCacheRepository(),
     });
   }
   return queue;
 }
 
-export function __resetThreadActionQueueForTests(next?: ThreadActionQueue): void {
+/** Drop the singleton so the next get() binds to current DB repositories. */
+export function resetThreadActionQueue(next?: ThreadActionQueue): void {
   queue = next ?? null;
+}
+
+export function __resetThreadActionQueueForTests(next?: ThreadActionQueue): void {
+  resetThreadActionQueue(next);
 }

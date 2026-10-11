@@ -2,6 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, type PropsWithChildren } from 'react';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 
+import { DatabaseProvider } from '@/app/providers/DatabaseProvider';
 import { ConnectivityProvider } from '@/core/connectivity/ConnectivityProvider';
 import { AppLifecycleProvider } from '@/core/lifecycle/AppLifecycleProvider';
 import { appQueryClient, wireReactQueryLifecycle } from '@/core/query/query-client';
@@ -21,9 +22,11 @@ export function AppProviders({ children }: PropsWithChildren) {
       <ThemeProvider>
         <QueryClientProvider client={appQueryClient}>
           <ConnectivityProvider>
-            <AppLifecycleProvider>
-              <AuthProvider>{children}</AuthProvider>
-            </AppLifecycleProvider>
+            <DatabaseProvider>
+              <AppLifecycleProvider>
+                <AuthProvider>{children}</AuthProvider>
+              </AppLifecycleProvider>
+            </DatabaseProvider>
           </ConnectivityProvider>
         </QueryClientProvider>
       </ThemeProvider>

@@ -2,6 +2,9 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { ApiError } from '@/core/api/errors';
 import type { Thread } from '@/core/api/schemas';
+import { hydrateQueryClientFromThreadCache } from '@/core/database/hydrate-query-cache';
+import { createMemoryOutboxRepository } from '@/core/database/outbox-repository';
+import { createMemoryThreadCacheRepository } from '@/core/database/thread-cache-repository';
 import { createThreadActionQueue } from '@/features/inbox/actions/thread-action-queue';
 import type { ThreadsApi } from '@/features/inbox/api/threads-api';
 import { inboxQueryKeys } from '@/features/inbox/query-keys';
@@ -38,9 +41,11 @@ describe('createThreadActionQueue', () => {
     const queue = createThreadActionQueue({
       threadsApi: { patchThread } as unknown as ThreadsApi,
       queryClient,
+      outbox: createMemoryOutboxRepository(),
+      threadCache: createMemoryThreadCacheRepository(),
     });
 
-    queue.enqueue({
+    await queue.enqueue({
       threadId: 'thr_1',
       field: 'isStarred',
       value: true,
@@ -87,9 +92,11 @@ describe('createThreadActionQueue', () => {
     const queue = createThreadActionQueue({
       threadsApi: { patchThread } as unknown as ThreadsApi,
       queryClient,
+      outbox: createMemoryOutboxRepository(),
+      threadCache: createMemoryThreadCacheRepository(),
     });
 
-    queue.enqueue({
+    await queue.enqueue({
       threadId: 'thr_1',
       field: 'isStarred',
       value: true,
@@ -106,5 +113,119 @@ describe('createThreadActionQueue', () => {
     expect(patchThread).toHaveBeenCalledWith(
       expect.objectContaining({ idempotencyKey: key }),
     );
+  });
+
+  it('survives restart: persisted outbox rehydrates and keeps the same key', async () => {
+    const outbox = createMemoryOutboxRepository();
+    const threadCache = createMemoryThreadCacheRepository();
+    await threadCache.replaceMailbox('inbox', [
+      { threads: [thread()], nextCursor: null },
+    ]);
+
+    const queryClientA = new QueryClient();
+    queryClientA.setQueryData(inboxQueryKeys.mailbox('inbox'), {
+      pages: [{ threads: [thread()], nextCursor: null }],
+      pageParams: [null],
+    });
+
+    const patchThread = jest.fn<Promise<Thread>, Parameters<ThreadsApi['patchThread']>>(
+      async () => {
+        throw new ApiError({
+          category: 'no_connection',
+          message: 'offline',
+          outcomeUncertain: true,
+        });
+      },
+    );
+
+    const queueA = createThreadActionQueue({
+      threadsApi: { patchThread } as unknown as ThreadsApi,
+      queryClient: queryClientA,
+      outbox,
+      threadCache,
+    });
+
+    await queueA.enqueue({
+      threadId: 'thr_1',
+      field: 'isArchived',
+      value: true,
+      confirmedValue: false,
+    });
+    await flush();
+
+    const key = queueA.peek('thr_1', 'isArchived')?.id;
+    expect(key).toBeTruthy();
+    expect(queueA.peek('thr_1', 'isArchived')?.status).toBe('queued');
+
+    // Simulate process death + relaunch with a fresh queue/query client.
+    const queryClientB = new QueryClient();
+    await hydrateQueryClientFromThreadCache(queryClientB, threadCache);
+
+    const queueB = createThreadActionQueue({
+      threadsApi: { patchThread } as unknown as ThreadsApi,
+      queryClient: queryClientB,
+      outbox,
+      threadCache,
+    });
+    await queueB.hydrate();
+
+    expect(queueB.peek('thr_1', 'isArchived')?.id).toBe(key);
+    expect(queueB.peek('thr_1', 'isArchived')?.status).toBe('queued');
+    expect(
+      queryClientB.getQueryData<{ pages: { threads: Thread[] }[] }>(
+        inboxQueryKeys.mailbox('inbox'),
+      )?.pages[0]?.threads.find((item) => item.id === 'thr_1'),
+    ).toBeUndefined();
+    expect(
+      queryClientB.getQueryData<{ pages: { threads: Thread[] }[] }>(
+        inboxQueryKeys.mailbox('archived'),
+      )?.pages[0]?.threads[0]?.isArchived,
+    ).toBe(true);
+
+    patchThread.mockReset();
+    patchThread.mockResolvedValue(thread({ isArchived: true, version: 3 }));
+    queueB.flushQueued();
+    await flush();
+
+    expect(patchThread).toHaveBeenLastCalledWith(
+      expect.objectContaining({ idempotencyKey: key, patch: { isArchived: true } }),
+    );
+    expect(queueB.peek('thr_1', 'isArchived')).toBeUndefined();
+  });
+
+  it('does not claim optimistic UI when outbox persist fails', async () => {
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(inboxQueryKeys.mailbox('inbox'), {
+      pages: [{ threads: [thread()], nextCursor: null }],
+      pageParams: [null],
+    });
+
+    const outbox = createMemoryOutboxRepository();
+    outbox.upsert = jest.fn(async () => {
+      throw new Error('disk full');
+    });
+
+    const patchThread = jest.fn();
+    const queue = createThreadActionQueue({
+      threadsApi: { patchThread } as unknown as ThreadsApi,
+      queryClient,
+      outbox,
+      threadCache: createMemoryThreadCacheRepository(),
+    });
+
+    await expect(
+      queue.enqueue({
+        threadId: 'thr_1',
+        field: 'isStarred',
+        value: true,
+        confirmedValue: false,
+      }),
+    ).rejects.toThrow('disk full');
+
+    expect(
+      queryClient.getQueryData<{ pages: { threads: Thread[] }[] }>(inboxQueryKeys.mailbox('inbox'))
+        ?.pages[0]?.threads[0]?.isStarred,
+    ).toBe(false);
+    expect(patchThread).not.toHaveBeenCalled();
   });
 });

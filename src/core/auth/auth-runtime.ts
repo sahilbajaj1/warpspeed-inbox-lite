@@ -1,16 +1,21 @@
 import { apiClient, bindApiTokenProvider } from '@/core/api/api-singleton';
 import { createSessionManager, type SessionManager } from '@/core/auth/session-manager';
 import { createSecureTokenStorage } from '@/core/auth/token-storage';
+import { clearPersistedUserData } from '@/core/database/database-runtime';
 import { logger } from '@/core/logging/logger';
+import { appQueryClient } from '@/core/query/query-client';
 import { createAuthApi } from '@/features/auth/api/auth-api';
+import { resetThreadActionQueue } from '@/features/inbox/actions/action-queue-runtime';
 
 let sessionManager: SessionManager | null = null;
 
 /**
- * Placeholder for Phase 8/9 cleanup (SQLite, sockets, outbox processors).
- * Auth clears tokens here; feature modules register additional teardown later.
+ * Drop user-scoped Query cache, SQLite outbox/thread cache, and action queue.
  */
-function clearUserScopedRuntimeState(): void {
+async function clearUserScopedRuntimeState(): Promise<void> {
+  appQueryClient.clear();
+  await clearPersistedUserData();
+  resetThreadActionQueue();
   logger.info('cleared user-scoped runtime state after session end');
 }
 

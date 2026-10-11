@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import { isApiError, toUserMessage } from '@/core/api/errors';
+import type { OutboxRepository } from '@/core/database/outbox-repository';
+import type { ThreadCacheRepository } from '@/core/database/thread-cache-repository';
 import { logger } from '@/core/logging/logger';
 import { actionQueueKey } from '@/features/inbox/actions/idempotency';
 import { coalesceThreadAction } from '@/features/inbox/actions/coalesce';
@@ -28,18 +30,24 @@ export type ThreadActionQueue = {
     field: ThreadActionField;
     value: boolean;
     confirmedValue: boolean;
-  }) => void;
+  }) => Promise<void>;
+  /** Load durable outbox after process restart and re-apply optimistic overlays. */
+  hydrate: () => Promise<void>;
+  /** Resume queued work (e.g. after reconnect). */
+  flushQueued: () => void;
   /** Test helper */
   peek: (threadId: string, field: ThreadActionField) => ThreadActionCommand | undefined;
 };
 
 /**
- * In-memory mutation outbox for Phase 7.
- * Phase 8 will replace storage with durable SQLite while keeping this coalescing/processor API.
+ * Mutation outbox with durable persistence.
+ * Persist intent before claiming UI success; same idempotency key survives restart.
  */
 export function createThreadActionQueue(deps: {
   threadsApi: ThreadsApi;
   queryClient: QueryClient;
+  outbox: OutboxRepository;
+  threadCache: ThreadCacheRepository;
 }): ThreadActionQueue {
   /** Latest command per threadId:field */
   const commands = new Map<string, ThreadActionCommand>();
@@ -57,13 +65,45 @@ export function createThreadActionQueue(deps: {
     }
   }
 
-  function setCommand(key: string, command: ThreadActionCommand | null): void {
+  async function setPrimary(
+    threadId: string,
+    field: ThreadActionField,
+    command: ThreadActionCommand | null,
+  ): Promise<void> {
+    const key = actionQueueKey(threadId, field);
     if (!command) {
       commands.delete(key);
+      await deps.outbox.removeBySlot(threadId, field, 'primary');
     } else {
       commands.set(key, command);
+      await deps.outbox.upsert(command, 'primary');
     }
     emit();
+  }
+
+  async function setFollowUp(
+    threadId: string,
+    field: ThreadActionField,
+    command: ThreadActionCommand | null,
+  ): Promise<void> {
+    const key = actionQueueKey(threadId, field);
+    if (!command) {
+      followUps.delete(key);
+      await deps.outbox.removeBySlot(threadId, field, 'follow_up');
+    } else {
+      followUps.set(key, command);
+      await deps.outbox.upsert(command, 'follow_up');
+    }
+    emit();
+  }
+
+  async function applyOptimistic(
+    threadId: string,
+    field: ThreadActionField,
+    value: boolean,
+  ): Promise<void> {
+    applyThreadPatchToCaches(deps.queryClient, threadId, { [field]: value });
+    await deps.threadCache.applyFieldPatch(threadId, { [field]: value });
   }
 
   async function processKey(key: string): Promise<void> {
@@ -76,7 +116,11 @@ export function createThreadActionQueue(deps: {
     }
 
     inFlightKeys.add(key);
-    setCommand(key, { ...command, status: 'in_flight', errorMessage: undefined });
+    await setPrimary(command.threadId, command.field, {
+      ...command,
+      status: 'in_flight',
+      errorMessage: undefined,
+    });
     let shouldProcessFollowUp = false;
 
     try {
@@ -100,34 +144,34 @@ export function createThreadActionQueue(deps: {
         subject: merged.subject,
         messageCount: merged.messageCount,
       });
+      await deps.threadCache.upsertThread(merged);
 
-      // Remove completed command unless a follow-up replaced the map entry.
       const current = commands.get(key);
       if (current?.id === command.id) {
-        setCommand(key, null);
+        await setPrimary(command.threadId, command.field, null);
       }
 
       const followUp = followUps.get(key);
       if (followUp) {
-        followUps.delete(key);
-        setCommand(key, { ...followUp, status: 'queued' });
-        applyThreadPatchToCaches(deps.queryClient, followUp.threadId, {
-          [followUp.field]: followUp.value,
+        await setFollowUp(command.threadId, command.field, null);
+        await setPrimary(followUp.threadId, followUp.field, {
+          ...followUp,
+          status: 'queued',
         });
+        await applyOptimistic(followUp.threadId, followUp.field, followUp.value);
         shouldProcessFollowUp = true;
       }
     } catch (error) {
       if (isApiError(error) && error.category === 'not_found') {
         deps.queryClient.setQueryData(threadDetailQueryKey(command.threadId), undefined);
-        setCommand(key, null);
-        followUps.delete(key);
+        await setPrimary(command.threadId, command.field, null);
+        await setFollowUp(command.threadId, command.field, null);
       } else {
         const uncertain =
           isApiError(error) && (error.outcomeUncertain || error.category === 'no_connection');
 
         if (uncertain) {
-          // Keep optimistic UI and retain the same idempotency key for retry.
-          setCommand(key, {
+          await setPrimary(command.threadId, command.field, {
             ...command,
             status: 'queued',
             errorMessage: toUserMessage(error),
@@ -137,11 +181,13 @@ export function createThreadActionQueue(deps: {
             category: isApiError(error) ? error.category : 'unknown',
           });
         } else {
-          // Permanent failure — revert optimistic field and surface the error.
           applyThreadPatchToCaches(deps.queryClient, command.threadId, {
             [command.field]: command.revertValue,
           });
-          setCommand(key, {
+          await deps.threadCache.applyFieldPatch(command.threadId, {
+            [command.field]: command.revertValue,
+          });
+          await setPrimary(command.threadId, command.field, {
             ...command,
             status: 'failed',
             errorMessage: toUserMessage(error),
@@ -198,7 +244,50 @@ export function createThreadActionQueue(deps: {
       return commands.get(actionQueueKey(threadId, field));
     },
 
-    enqueue({ threadId, field, value, confirmedValue }) {
+    async hydrate() {
+      const { primary, followUps: storedFollowUps } = await deps.outbox.loadAll();
+      commands.clear();
+      followUps.clear();
+
+      for (const command of primary) {
+        const key = actionQueueKey(command.threadId, command.field);
+        // Interrupted in-flight work is uncertain — keep the same key and retry.
+        const restored: ThreadActionCommand =
+          command.status === 'in_flight'
+            ? { ...command, status: 'queued' }
+            : command;
+        commands.set(key, restored);
+        if (restored.status !== 'failed') {
+          applyThreadPatchToCaches(deps.queryClient, restored.threadId, {
+            [restored.field]: restored.value,
+          });
+        }
+      }
+
+      for (const command of storedFollowUps) {
+        const key = actionQueueKey(command.threadId, command.field);
+        followUps.set(key, command);
+        applyThreadPatchToCaches(deps.queryClient, command.threadId, {
+          [command.field]: command.value,
+        });
+      }
+
+      emit();
+      logger.info('hydrated action outbox', {
+        primary: primary.length,
+        followUps: storedFollowUps.length,
+      });
+    },
+
+    flushQueued() {
+      for (const [key, command] of commands) {
+        if (command.status === 'queued') {
+          void processKey(key);
+        }
+      }
+    },
+
+    async enqueue({ threadId, field, value, confirmedValue }) {
       const key = actionQueueKey(threadId, field);
       const existing = commands.get(key);
       const result = coalesceThreadAction({
@@ -209,21 +298,18 @@ export function createThreadActionQueue(deps: {
         confirmedValue,
       });
 
-      // Optimistic UI immediately reflects latest intent.
-      applyThreadPatchToCaches(deps.queryClient, threadId, { [field]: value });
-
       if (existing?.status === 'in_flight') {
-        if (result.next) {
-          followUps.set(key, result.next);
-        } else {
-          followUps.delete(key);
-        }
-        emit();
+        // Persist follow-up before acknowledging UI.
+        await setFollowUp(threadId, field, result.next);
+        await applyOptimistic(threadId, field, value);
         return;
       }
 
-      followUps.delete(key);
-      setCommand(key, result.next);
+      await setFollowUp(threadId, field, null);
+      await setPrimary(threadId, field, result.next);
+      // Only claim optimistic UI after durable write succeeds.
+      await applyOptimistic(threadId, field, value);
+
       if (result.next) {
         void processKey(key);
       }

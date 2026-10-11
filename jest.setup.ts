@@ -51,6 +51,12 @@ jest.mock('expo-secure-store', () => {
   };
 });
 
+jest.mock('expo-sqlite', () => ({
+  openDatabaseAsync: jest.fn(async () => {
+    throw new Error('sqlite unavailable in jest');
+  }),
+}));
+
 jest.mock('@/core/logging/logger', () => ({
   logger: {
     debug: jest.fn(),
@@ -64,6 +70,12 @@ beforeEach(() => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const secureStore = require('expo-secure-store') as { __memory: Map<string, string> };
   secureStore.__memory.clear();
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { __resetDatabaseRuntimeForTests } = require('@/core/database/database-runtime') as {
+    __resetDatabaseRuntimeForTests: () => void;
+  };
+  __resetDatabaseRuntimeForTests();
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { __resetAuthRuntimeForTests } = require('@/core/auth/auth-runtime') as {
