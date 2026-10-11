@@ -49,7 +49,11 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "sandbox:reset": "node scripts/sandbox-dev.mjs reset",
+    "sandbox:chaos": "node scripts/sandbox-dev.mjs chaos",
+    "sandbox:chaos-off": "node scripts/sandbox-dev.mjs chaos-off",
+    "sandbox:burst": "node scripts/sandbox-dev.mjs burst"
   },
   "jest": {
     "preset": "jest-expo",

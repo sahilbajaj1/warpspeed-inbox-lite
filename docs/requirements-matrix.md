@@ -33,8 +33,8 @@
 | C-04 | Visual design not assessed; must be usable | p1 Constraints | Usable UI | Restrained primitives; a11y basics | Dynamic type overflow | P3 | `shared/theme`, UI | Primary flows usable without design polish | Component a11y smoke | not_started |
 | C-05 | 8–12h focused; 5 calendar days; report time honestly | p1 Time | N/A | Scope trade-offs; incomplete items explicit | Over-scoping | P3 | README / `ai/` | Honest time + incomplete list in README | N/A | not_started |
 | C-06 | Submit code + full git history (no squash/rewrite) | p4 What to submit | N/A | Incremental commits | Accidental amend/rebase | P3 | git | History shows incremental slices | Review log | not_started |
-| C-07 | `ai/` folder with uncurated AI working material | p4 What to submit | N/A | Preserve transcripts/plans/rules | Credential leakage in exports | P3 | `ai/` | `ai/` present; secrets redacted only | Manual review | in_progress |
-| C-08 | README covering run, built/not built, decisions, AI, next week, time | p4 What to submit | N/A | Final docs phase | Incomplete claims | P3 | README | All README sections filled honestly | Manual review | not_started |
+| C-07 | `ai/` folder with uncurated AI working material | p4 What to submit | N/A | Preserve transcripts/plans/rules | Credential leakage in exports | P3 | `ai/` | `ai/` present; secrets redacted only | Manual review | done |
+| C-08 | README covering run, built/not built, decisions, AI, next week, time | p4 What to submit | N/A | Final docs phase | Incomplete claims | P3 | README | All README sections filled honestly | Manual review | partial |
 | C-09 | Screen recording ≤3 minutes of working features only | p4 What to submit | Demo of real features | Record after verification | Demo of unfinished features | P3 | submission | Recording ≤3m; only working flows | Manual | not_started |
 | C-10 | Do not invent a custom backend; use supplied API | p1 The test API | App talks to sandbox | Base URL fixed; no local mock server as product | Dev fixtures for unit tests only | P0 | `core/api` | All runtime networking hits sandbox | Integration against API | not_started |
 
@@ -45,7 +45,7 @@
 | A-01 | Success envelope `{ data, meta }` | p2 Conventions | N/A | Typed parser; reject invalid shapes | Missing fields; wrong types | P0 | `response-parser` | Valid envelope parses; invalid → InvalidResponse error | Validation unit tests | not_started |
 | A-02 | Error envelope `{ error: { code, message } }` | p2 Conventions | Human-readable errors; never raw stacks | Normalize by status + code | Malformed error body | P0 | `errors` | User sees safe message; code preserved for logic | Error normalization tests | not_started |
 | A-03 | `meta.userBalance` on every authenticated response | p2 Conventions | Credits stay current after API calls | Extract meta → credit store | Missing meta; stale overwrite | P2 | credits + API client | Present balance updates store | Meta extraction tests | done |
-| A-04 | Some 5xx, latency up to 10s, 429 + Retry-After | p2 Conventions | Loading/retry UX under chaos | Timeouts >10s; honor Retry-After; cautious write retries | 5xx after successful write | P1 | `retry-policy`, UI feedback | Reads can retry; writes not blindly replayed; 429 waits | Retry-After; chaos scenarios | not_started |
+| A-04 | Some 5xx, latency up to 10s, 429 + Retry-After | p2 Conventions | Loading/retry UX under chaos | Timeouts >10s; honor Retry-After; cautious write retries | 5xx after successful write | P1 | `retry-policy`, UI feedback | Reads can retry; writes not blindly replayed; 429 waits | Retry-After; chaos scenarios | partial |
 | A-05 | Write failing with 5xx may still have been applied | p2 Conventions | No false “failed” that double-applies | Idempotency-Key; reconcile via GET/sync/socket | Duplicate star toggles | P1 | mutation outbox | Same logical op keeps same key; UI reconciles truth | 5xx after PATCH applied | not_started |
 
 ### Authentication API (page 2)
@@ -92,9 +92,9 @@
 
 | ID | Exact requirement | Source | User-visible behavior | Technical implications | Edge cases | Priority | Owner | Acceptance criteria | Test cases | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| DEV-01 | `POST /dev/reset` restores inbox and credits | p4 Tools | Known baseline for tests | Dev-only usage; never rate-limited | Accidental prod use (N/A sandbox) | P2 | test helpers / scripts | Reset returns account to baseline | Manual / scripted reset | not_started |
-| DEV-02 | `POST /dev/chaos` `{ failureRate, latencyMs }`; set both 0 to off | p4 Tools | App resilient under chaos | Document observed results | Leaving chaos on | P2 | chaos scripts + notes | Chaos exercised; restored to 0 | Chaos verification notes | not_started |
-| DEV-03 | `POST /dev/burst` delivers 200 threads over 10s | p4 Tools | Inbox absorbs burst | Ordering, dedupe, scroll stability | Pagination during burst | P2 | performance notes | No dupes; order ok; no full-screen thrash | Burst observation record | not_started |
+| DEV-01 | `POST /dev/reset` restores inbox and credits | p4 Tools | Known baseline for tests | Dev-only usage; never rate-limited | Accidental prod use (N/A sandbox) | P2 | test helpers / scripts | Reset returns account to baseline | Manual / scripted reset | done |
+| DEV-02 | `POST /dev/chaos` `{ failureRate, latencyMs }`; set both 0 to off | p4 Tools | App resilient under chaos | Document observed results | Leaving chaos on | P2 | chaos scripts + notes | Chaos exercised; restored to 0 | Chaos verification notes | partial |
+| DEV-03 | `POST /dev/burst` delivers 200 threads over 10s | p4 Tools | Inbox absorbs burst | Ordering, dedupe, scroll stability | Pagination during burst | P2 | performance notes | No dupes; order ok; no full-screen thrash | Burst observation record | partial |
 
 ### Account / environment facts (page 2)
 
