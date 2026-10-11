@@ -46,11 +46,11 @@
 
 ---
 
-## Submission blockers (remaining)
+## Submission status
 
 1. ~~Assigned sandbox credentials~~ — local `.env` (gitignored)  
 2. ~~Fill `docs/chaos-observations.md`~~ — API live smoke recorded 2026-10-11  
-3. Record ≤3m UI demo per `docs/demo-recording.md` (human/simulator)  
-4. Declare platform + finalize wall-clock in README after recording  
+3. ~~Record ≤3m UI demo~~ — `docs/demo-assets/inbox-lite-demo.mp4` (~17s)  
+4. ~~Declare platform~~ — iPhone 16 / iOS 18.5 / Expo Go 57 in README  
 
-Automated + API live gates green; UI recording still open — see `docs/acceptance-checklist.md`.
+Optional follow-ups (not blockers): filmed offline flush, Maestro, move providers out of `src/app/`.

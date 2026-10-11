@@ -9,17 +9,20 @@ import { useThreadActions } from '@/features/inbox/hooks/useThreadActions';
 export function useMarkThreadRead(thread: ThreadDetail | undefined) {
   const attemptedForIdRef = useRef<string | null>(null);
   const actions = useThreadActions(thread);
+  const markRead = actions.markRead;
+  const threadId = thread?.id;
+  const isRead = thread?.isRead;
 
   useEffect(() => {
-    if (!thread || thread.isRead) {
+    if (!threadId || isRead) {
       return;
     }
-    if (attemptedForIdRef.current === thread.id) {
+    if (attemptedForIdRef.current === threadId) {
       return;
     }
-    attemptedForIdRef.current = thread.id;
-    actions.markRead();
-  }, [actions, thread]);
+    attemptedForIdRef.current = threadId;
+    markRead();
+  }, [isRead, markRead, threadId]);
 
   return {
     isPending: Boolean(actions.pending.isRead),

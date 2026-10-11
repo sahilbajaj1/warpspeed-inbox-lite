@@ -29,13 +29,13 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | C-01 | Expo (current SDK) with TypeScript | p1 Constraints | N/A (engineering) | Expo SDK 57 + RN 0.86 + TS strict | Dependency drift | P0 | project root | App builds/runs on Expo SDK 57 TypeScript template | `tsc` / Expo start | done |
 | C-02 | Expo Router is standard but not required | p1 Constraints | Navigation between login/inbox/detail | Prefer Expo Router unless blocked | Deep link restore | P0 | `app/` routes | Auth and main navigation work | Smoke navigation | done |
-| C-03 | Must run on iOS or Android (sim/emulator OK); declare tested platform | p1 Constraints | App runs on declared platform | Document in README | Device vs simulator differences | P0 | README | README states tested OS/runtime | Manual smoke | partial |
+| C-03 | Must run on iOS or Android (sim/emulator OK); declare tested platform | p1 Constraints | App runs on declared platform | Document in README | Device vs simulator differences | P0 | README | README states tested OS/runtime | Manual smoke | done |
 | C-04 | Visual design not assessed; must be usable | p1 Constraints | Usable UI | Restrained primitives; a11y basics | Dynamic type overflow | P3 | `shared/theme`, UI | Primary flows usable without design polish | Component a11y smoke | partial |
 | C-05 | 8–12h focused; 5 calendar days; report time honestly | p1 Time | N/A | Scope trade-offs; incomplete items explicit | Over-scoping | P3 | README / `ai/` | Honest time + incomplete list in README | N/A | partial |
 | C-06 | Submit code + full git history (no squash/rewrite) | p4 What to submit | N/A | Incremental commits | Accidental amend/rebase | P3 | git | History shows incremental slices | Review log | done |
 | C-07 | `ai/` folder with uncurated AI working material | p4 What to submit | N/A | Preserve transcripts/plans/rules | Credential leakage in exports | P3 | `ai/` | `ai/` present; secrets redacted only | Manual review | done |
 | C-08 | README covering run, built/not built, decisions, AI, next week, time | p4 What to submit | N/A | Final docs phase | Incomplete claims | P3 | README | All README sections filled honestly | Manual review | partial (sections present; wall-clock + recording TBD) |
-| C-09 | Screen recording ≤3 minutes of working features only | p4 What to submit | Demo of real features | Record after verification | Demo of unfinished features | P3 | submission | Recording ≤3m; only working flows | Manual | not_started |
+| C-09 | Screen recording ≤3 minutes of working features only | p4 What to submit | Demo of real features | Record after verification | Demo of unfinished features | P3 | submission | Recording ≤3m; only working flows | Manual | done (`docs/demo-assets/inbox-lite-demo.mp4` ~17s) |
 | C-10 | Do not invent a custom backend; use supplied API | p1 The test API | App talks to sandbox | Base URL fixed; no local mock server as product | Dev fixtures for unit tests only | P0 | `core/api` | All runtime networking hits sandbox | Integration against API | done |
 
 ### API conventions (page 2)

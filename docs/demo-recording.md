@@ -1,7 +1,7 @@
 # Demo recording runbook (≤3 minutes)
 
 **PDF:** C-09 — screen recording of **working features only**  
-**Status:** Script ready; **API live smoke green** (2026-10-11). Remaining: human/simulator screen capture ≤3m.
+**Status:** **Recorded** 2026-10-11 — `docs/demo-assets/inbox-lite-demo.mp4` (~17s) on iPhone 16 / iOS 18.5 / Expo Go 57.
 
 ---
 

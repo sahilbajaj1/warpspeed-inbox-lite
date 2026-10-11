@@ -48,9 +48,7 @@ See `docs/dev-tools.md`.
 
 ## What is not built / incomplete
 
-- Screen recording ≤3 minutes (C-09) — script in `docs/demo-recording.md` (API live smoke done; UI capture pending)  
-- Declared device/OS for the recording (C-03 finalize)  
-- Device airplane-mode outbox flush observation (code covered; not filmed)  
+- Device airplane-mode outbox flush observation (code covered; not filmed in the ≤3m demo)  
 - Maestro E2E; full VoiceOver / Dynamic Type device audit  
 - Compose / reply / search (out of scope)  
 - Perfect offline of the full ~3k corpus on first launch (caches fetched/opened data only)
@@ -86,7 +84,7 @@ See `docs/dev-tools.md`.
 
 ## AI usage
 
-Work was done with Cursor agents, phased 0→17. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims. Credentials live only in gitignored `.env`.
+Work was done with Cursor agents, phased 0→18. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims. Credentials live only in gitignored `.env`.
 
 ## Test results (automated)
 
@@ -100,15 +98,15 @@ Live sandbox (2026-10-11 API smoke): reset OK; chaos latency/5xx observed then r
 
 ## What I would do next week
 
-1. Capture a ≤3m **UI** recording per `docs/demo-recording.md` on iOS Simulator or Android Emulator  
-2. Validate FlashList blank-area feel while scrolling during/after burst  
-3. Film one offline → reconnect outbox flush  
-4. Fill exact wall-clock hours for the submission package  
+1. Validate FlashList blank-area feel while scrolling during/after a live burst on device  
+2. Film one offline → reconnect outbox flush as a short addendum if reviewers want it  
+3. Move `src/app/providers/*` outside the route tree to silence Expo Router default-export warnings  
+4. Optional Maestro smoke for login → open thread  
 
 ## Time
 
-Brief target: **8–12 focused hours**. Implementation spans Phases 0–17 as incremental commits on `master` (see git log). Phase 18 remaining item is the UI screen recording + platform declaration. Honest wall-clock for the submission package will be filled after that recording.
+Brief target: **8–12 focused hours**. Implementation spans Phases 0–18 as incremental commits on `master` (see git log). Wall-clock across the calendar window is higher than focused hours (agent-assisted, multi-session); treat the brief’s 8–12h as the focused engineering band, not wall-clock.
 
 ## Platform
 
-Intended for **iOS Simulator** and/or **Android Emulator** via Expo. Exact device/OS used for the submission recording will be declared here when recorded (C-03 / C-09).
+**Tested for submission recording:** iPhone 16 Simulator, **iOS 18.5**, Expo Go **SDK 57**, Metro on macOS. Demo: `docs/demo-assets/inbox-lite-demo.mp4` (~17 seconds).

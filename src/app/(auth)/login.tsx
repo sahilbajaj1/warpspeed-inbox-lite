@@ -1,8 +1,13 @@
 import { Redirect } from 'expo-router';
+import { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '@/features/auth/AuthProvider';
 import { LoginForm } from '@/features/auth/components/LoginForm';
+import {
+  fetchDevSandboxCreds,
+  isDemoAutoLoginEnabled,
+} from '@/features/auth/devSandboxCreds';
 import { AppScreen } from '@/shared/components/AppScreen';
 import { AppText } from '@/shared/components/AppText';
 import { OfflineBanner } from '@/shared/components/OfflineBanner';
@@ -13,6 +18,25 @@ import { useTheme } from '@/shared/theme/ThemeProvider';
 export default function LoginScreen() {
   const { status, login } = useAuth();
   const { colors } = useTheme();
+  const autoLoginStarted = useRef(false);
+
+  useEffect(() => {
+    if (status !== 'unauthenticated' || !isDemoAutoLoginEnabled() || autoLoginStarted.current) {
+      return;
+    }
+    autoLoginStarted.current = true;
+    void (async () => {
+      const creds = await fetchDevSandboxCreds();
+      if (!creds) {
+        return;
+      }
+      try {
+        await login(creds);
+      } catch {
+        // Keep the form visible if auto-login fails.
+      }
+    })();
+  }, [login, status]);
 
   if (status === 'bootstrapping') {
     return (

@@ -78,9 +78,10 @@ npm test
 | Open thread + PATCH star / idempotency | ✅ API |
 | Summarise with credits visible | ✅ API (`delta` SSE; balance drops) |
 | `sandbox:reset` / chaos / restore-to-0 / burst | ✅ API — `docs/chaos-observations.md` |
-| Scroll inbox UI + Starred/Archived tabs | ⬚ simulator |
-| Airplane mode → action → reconnect flush | ⬚ device |
-| Record ≤3m of working flows only | ⬚ pending |
+| Scroll inbox UI + Starred/Archived tabs | ✅ simulator screenshots / recording |
+| Open thread detail + actions UI | ✅ simulator (fixed update-loop bug) |
+| Airplane mode → action → reconnect flush | ⬚ not filmed |
+| Record ≤3m of working flows only | ✅ `docs/demo-assets/inbox-lite-demo.mp4` ~17s |
 
 ---
 
