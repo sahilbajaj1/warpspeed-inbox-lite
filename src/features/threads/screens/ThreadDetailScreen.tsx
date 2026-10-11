@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { isApiError, toUserMessage } from '@/core/api/errors';
 import { CreditsBadge } from '@/features/credits/CreditsBadge';
@@ -9,6 +9,7 @@ import { MessageCard } from '@/features/threads/components/MessageCard';
 import { ThreadHeader } from '@/features/threads/components/ThreadHeader';
 import { useMarkThreadRead } from '@/features/threads/hooks/useMarkThreadRead';
 import { useThreadDetail } from '@/features/threads/hooks/useThreadDetail';
+import { AppActivityIndicator } from '@/shared/components/AppActivityIndicator';
 import { AppButton } from '@/shared/components/AppButton';
 import { AppText } from '@/shared/components/AppText';
 import { ErrorState } from '@/shared/components/ErrorState';
@@ -30,7 +31,7 @@ export function ThreadDetailScreen({ threadId }: ThreadDetailScreenProps) {
   if (isPending && !data) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]} testID="thread-loading">
-        <ActivityIndicator accessibilityLabel="Loading thread" color={colors.accent} />
+        <AppActivityIndicator accessibilityLabel="Loading thread" color={colors.accent} />
       </View>
     );
   }

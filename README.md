@@ -84,12 +84,12 @@ Live sandbox / chaos / burst: **not yet recorded** (no credentials in environmen
 
 1. Run reset/chaos/burst against the assigned account; fill `docs/chaos-observations.md`  
 2. Capture a ≤3m recording of login → inbox → detail → star/archive → summary  
-3. Tighten a11y (Dynamic Type, reduce motion) and FlashList blank-area tuning under burst  
+3. Validate FlashList blank-area feel under live burst (tuning already in Phase 13 / `docs/a11y-perf.md`)  
 4. Probe live SSE event names if the flexible parser needs a narrow fix  
 
 ## Time
 
-Focused implementation across Phases 0–11. Honest wall-clock will be finalized at submission; do not treat this README as claiming a finished live demo until chaos notes + recording exist.
+Focused implementation across Phases 0–13. Honest wall-clock will be finalized at submission; do not treat this README as claiming a finished live demo until chaos notes + recording exist.
 
 ## Platform
 

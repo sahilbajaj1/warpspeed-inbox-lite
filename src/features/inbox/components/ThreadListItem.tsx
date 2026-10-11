@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Thread } from '@/core/api/schemas';
@@ -9,7 +10,7 @@ import {
 } from '@/features/inbox/models/thread-list';
 import { MIN_TOUCH_TARGET_SIZE } from '@/shared/a11y/conventions';
 import { AppText } from '@/shared/components/AppText';
-import { borderTokens, radiusTokens, spacingTokens } from '@/shared/theme/tokens';
+import { borderTokens, spacingTokens } from '@/shared/theme/tokens';
 import { useTheme } from '@/shared/theme/ThemeProvider';
 
 export type ThreadListItemProps = {
@@ -18,7 +19,7 @@ export type ThreadListItemProps = {
   testID?: string;
 };
 
-export function ThreadListItem({ thread, onPress, testID }: ThreadListItemProps) {
+function ThreadListItemComponent({ thread, onPress, testID }: ThreadListItemProps) {
   const { colors } = useTheme();
   const actions = useThreadActions(thread);
   const unread = !thread.isRead;
@@ -40,10 +41,15 @@ export function ThreadListItem({ thread, onPress, testID }: ThreadListItemProps)
         },
       ]}
     >
+      {/* Thickness + weight cues so unread is not color-only (P-03 / C-04). */}
       <View
+        testID={testID ? `${testID}-unread-cue` : undefined}
         style={[
-          styles.unreadDot,
-          { backgroundColor: unread ? colors.accent : 'transparent' },
+          styles.unreadBar,
+          {
+            backgroundColor: unread ? colors.textPrimary : 'transparent',
+            opacity: unread ? 1 : 0,
+          },
         ]}
         accessibilityElementsHidden
         importantForAccessibility="no"
@@ -71,6 +77,11 @@ export function ThreadListItem({ thread, onPress, testID }: ThreadListItemProps)
         <AppText variant="caption" tone="secondary" numberOfLines={2}>
           {thread.snippet}
         </AppText>
+        {unread ? (
+          <AppText variant="caption" tone="secondary" testID={testID ? `${testID}-unread-label` : undefined}>
+            Unread
+          </AppText>
+        ) : null}
         {actions.isPending ? (
           <AppText variant="caption" tone="secondary">
             Syncing…
@@ -87,6 +98,16 @@ export function ThreadListItem({ thread, onPress, testID }: ThreadListItemProps)
   );
 }
 
+function propsAreEqual(prev: ThreadListItemProps, next: ThreadListItemProps): boolean {
+  return (
+    prev.onPress === next.onPress &&
+    prev.testID === next.testID &&
+    prev.thread === next.thread
+  );
+}
+
+export const ThreadListItem = memo(ThreadListItemComponent, propsAreEqual);
+
 const styles = StyleSheet.create({
   row: {
     minHeight: MIN_TOUCH_TARGET_SIZE,
@@ -97,11 +118,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacingTokens.md,
     borderBottomWidth: borderTokens.width,
   },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: radiusTokens.sm,
-    marginTop: 8,
+  unreadBar: {
+    width: 3,
+    alignSelf: 'stretch',
+    minHeight: 40,
+    borderRadius: 1,
+    marginTop: 2,
   },
   content: {
     flex: 1,

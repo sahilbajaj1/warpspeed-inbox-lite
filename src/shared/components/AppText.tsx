@@ -1,5 +1,6 @@
 import { Text, type TextProps, type TextStyle } from 'react-native';
 
+import { DEFAULT_MAX_FONT_SIZE_MULTIPLIER } from '@/shared/a11y/conventions';
 import { typographyTokens, type TypographyVariant } from '@/shared/theme/tokens';
 import { useTheme } from '@/shared/theme/ThemeProvider';
 
@@ -26,6 +27,8 @@ export function AppText({
   tone = 'primary',
   style,
   children,
+  maxFontSizeMultiplier = DEFAULT_MAX_FONT_SIZE_MULTIPLIER,
+  allowFontScaling = true,
   ...rest
 }: AppTextProps) {
   const { colors } = useTheme();
@@ -34,6 +37,8 @@ export function AppText({
   return (
     <Text
       {...rest}
+      allowFontScaling={allowFontScaling}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
       style={[
         {
           color: colors[toneToColorKey[tone]],

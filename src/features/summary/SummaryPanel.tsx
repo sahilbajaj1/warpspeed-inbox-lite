@@ -1,4 +1,6 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { AppActivityIndicator } from '@/shared/components/AppActivityIndicator';
 
 import { useCreditsBalance } from '@/features/credits/useCreditsBalance';
 import { useThreadSummary } from '@/features/summary/useThreadSummary';
@@ -32,7 +34,7 @@ export function SummaryPanel({ threadId, testID }: SummaryPanelProps) {
       <View style={styles.header}>
         <AppText variant="label">AI summary</AppText>
         {summary.isStreaming ? (
-          <ActivityIndicator
+          <AppActivityIndicator
             accessibilityLabel="Generating summary"
             color={colors.accent}
             size="small"

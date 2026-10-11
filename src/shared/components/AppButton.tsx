@@ -1,6 +1,7 @@
-import { ActivityIndicator, Pressable, StyleSheet, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
 import { MIN_TOUCH_TARGET_SIZE } from '@/shared/a11y/conventions';
+import { AppActivityIndicator } from '@/shared/components/AppActivityIndicator';
 import { AppText } from '@/shared/components/AppText';
 import { borderTokens, radiusTokens, spacingTokens } from '@/shared/theme/tokens';
 import { useTheme } from '@/shared/theme/ThemeProvider';
@@ -56,8 +57,9 @@ export function AppButton({
       ]}
     >
       {loading ? (
-        <ActivityIndicator
+        <AppActivityIndicator
           color={variant === 'secondary' ? colors.textPrimary : colors.textInverse}
+          accessibilityLabel={`${label}, loading`}
           testID={testID ? `${testID}-loading` : undefined}
         />
       ) : (

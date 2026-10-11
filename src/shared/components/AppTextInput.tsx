@@ -1,7 +1,10 @@
 import { useId } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
-import { MIN_TOUCH_TARGET_SIZE } from '@/shared/a11y/conventions';
+import {
+  DEFAULT_MAX_FONT_SIZE_MULTIPLIER,
+  MIN_TOUCH_TARGET_SIZE,
+} from '@/shared/a11y/conventions';
 import { AppText } from '@/shared/components/AppText';
 import { borderTokens, radiusTokens, spacingTokens, typographyTokens } from '@/shared/theme/tokens';
 import { useTheme } from '@/shared/theme/ThemeProvider';
@@ -39,6 +42,8 @@ export function AppTextInput({
         accessibilityLabel={label}
         accessibilityState={{ disabled }}
         accessibilityHint={errorMessage}
+        allowFontScaling
+        maxFontSizeMultiplier={DEFAULT_MAX_FONT_SIZE_MULTIPLIER}
         placeholderTextColor={colors.textSecondary}
         style={[
           styles.input,

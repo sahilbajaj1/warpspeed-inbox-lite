@@ -1,5 +1,6 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { AppActivityIndicator } from '@/shared/components/AppActivityIndicator';
 import { AppText } from '@/shared/components/AppText';
 import { spacingTokens } from '@/shared/theme/tokens';
 import { useTheme } from '@/shared/theme/ThemeProvider';
@@ -22,7 +23,7 @@ export function PendingActionIndicator({
       accessibilityLabel={label}
       style={styles.row}
     >
-      <ActivityIndicator size="small" color={colors.accent} />
+      <AppActivityIndicator size="small" color={colors.accent} accessibilityLabel={label} />
       <AppText variant="caption" tone="secondary">
         {label}
       </AppText>

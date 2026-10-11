@@ -28,6 +28,7 @@ export function StarButton({
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityHint={starred ? 'Removes star from this thread' : 'Stars this thread'}
       accessibilityState={{ disabled: disabled || pending, selected: starred }}
       disabled={disabled}
       onPress={onPress}

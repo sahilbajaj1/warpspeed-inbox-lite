@@ -1,5 +1,6 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { AppActivityIndicator } from '@/shared/components/AppActivityIndicator';
 import { AppText } from '@/shared/components/AppText';
 import { spacingTokens } from '@/shared/theme/tokens';
 import { useTheme } from '@/shared/theme/ThemeProvider';
@@ -32,7 +33,10 @@ export function PaginationFooter({ isFetchingNextPage, hasNextPage }: Pagination
       accessibilityRole="progressbar"
       accessibilityLabel="Loading more threads"
     >
-      <ActivityIndicator color={colors.accent} />
+      <AppActivityIndicator
+        color={colors.accent}
+        accessibilityLabel="Loading more threads"
+      />
     </View>
   );
 }
