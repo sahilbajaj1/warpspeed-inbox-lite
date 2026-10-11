@@ -12,11 +12,23 @@ import {
   type ThreadCacheRepository,
 } from '@/core/database/thread-cache-repository';
 import { logger } from '@/core/logging/logger';
+import {
+  createMemorySyncCursorStore,
+  createSqliteSyncCursorStore,
+  type SyncCursorStore,
+} from '@/core/sync/sync-cursor-store';
+import {
+  createMemoryTombstoneStore,
+  createSqliteTombstoneStore,
+  type TombstoneStore,
+} from '@/core/sync/tombstone-store';
 
 type DatabaseRuntime = {
   db: SQLiteDatabase | null;
   outbox: OutboxRepository;
   threadCache: ThreadCacheRepository;
+  syncCursor: SyncCursorStore;
+  tombstones: TombstoneStore;
   ready: boolean;
 };
 
@@ -27,6 +39,8 @@ function createDefaultRuntime(): DatabaseRuntime {
     db: null,
     outbox: createMemoryOutboxRepository(),
     threadCache: createMemoryThreadCacheRepository(),
+    syncCursor: createMemorySyncCursorStore(),
+    tombstones: createMemoryTombstoneStore(),
     ready: false,
   };
 }
@@ -42,6 +56,8 @@ export async function initDatabaseRuntime(): Promise<DatabaseRuntime> {
       db,
       outbox: createSqliteOutboxRepository(db),
       threadCache: createSqliteThreadCacheRepository(db),
+      syncCursor: createSqliteSyncCursorStore(db),
+      tombstones: createSqliteTombstoneStore(db),
       ready: true,
     };
     logger.info('sqlite database ready');
@@ -55,24 +71,35 @@ export async function initDatabaseRuntime(): Promise<DatabaseRuntime> {
       db: null,
       outbox: createMemoryOutboxRepository(),
       threadCache: createMemoryThreadCacheRepository(),
+      syncCursor: createMemorySyncCursorStore(),
+      tombstones: createMemoryTombstoneStore(),
       ready: true,
     };
     return runtime;
   }
 }
 
-export function getOutboxRepository(): OutboxRepository {
+function ensureRuntime(): DatabaseRuntime {
   if (!runtime) {
     runtime = createDefaultRuntime();
   }
-  return runtime.outbox;
+  return runtime;
+}
+
+export function getOutboxRepository(): OutboxRepository {
+  return ensureRuntime().outbox;
 }
 
 export function getThreadCacheRepository(): ThreadCacheRepository {
-  if (!runtime) {
-    runtime = createDefaultRuntime();
-  }
-  return runtime.threadCache;
+  return ensureRuntime().threadCache;
+}
+
+export function getSyncCursorStore(): SyncCursorStore {
+  return ensureRuntime().syncCursor;
+}
+
+export function getTombstoneStore(): TombstoneStore {
+  return ensureRuntime().tombstones;
 }
 
 export function isDatabaseReady(): boolean {
@@ -80,10 +107,11 @@ export function isDatabaseReady(): boolean {
 }
 
 export async function clearPersistedUserData(): Promise<void> {
-  const outbox = getOutboxRepository();
-  const threadCache = getThreadCacheRepository();
-  await outbox.clearAll();
-  await threadCache.clearAll();
+  const current = ensureRuntime();
+  await current.outbox.clearAll();
+  await current.threadCache.clearAll();
+  await current.syncCursor.clear();
+  await current.tombstones.clearAll();
   logger.info('cleared persisted user data');
 }
 
@@ -91,11 +119,15 @@ export async function clearPersistedUserData(): Promise<void> {
 export function __resetDatabaseRuntimeForTests(next?: {
   outbox?: OutboxRepository;
   threadCache?: ThreadCacheRepository;
+  syncCursor?: SyncCursorStore;
+  tombstones?: TombstoneStore;
 }): void {
   runtime = {
     db: null,
     outbox: next?.outbox ?? createMemoryOutboxRepository(),
     threadCache: next?.threadCache ?? createMemoryThreadCacheRepository(),
+    syncCursor: next?.syncCursor ?? createMemorySyncCursorStore(),
+    tombstones: next?.tombstones ?? createMemoryTombstoneStore(),
     ready: true,
   };
 }

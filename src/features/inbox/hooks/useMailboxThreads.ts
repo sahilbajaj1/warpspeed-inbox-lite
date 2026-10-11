@@ -3,7 +3,10 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { apiClient } from '@/core/api/api-singleton';
-import { getThreadCacheRepository } from '@/core/database/database-runtime';
+import {
+  getSyncCursorStore,
+  getThreadCacheRepository,
+} from '@/core/database/database-runtime';
 import { createThreadsApi, type ThreadPage } from '@/features/inbox/api/threads-api';
 import type { MailboxView } from '@/features/inbox/models/mailbox';
 import { flattenAndDedupeThreadPages } from '@/features/inbox/models/thread-list';
@@ -29,6 +32,13 @@ export function useMailboxThreads(view: MailboxView) {
           const existing = await cache.loadMailbox(view);
           const prior = existing?.pages ?? [];
           await cache.replaceMailbox(view, [...prior, page]);
+        }
+        // Seed sync checkpoint from list meta once data is applied (SYN-01).
+        if (page.syncToken) {
+          const cursor = getSyncCursorStore();
+          if (!(await cursor.get())) {
+            await cursor.set(page.syncToken);
+          }
         }
         return page;
       } catch (error) {

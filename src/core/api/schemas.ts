@@ -82,12 +82,37 @@ export const syncDataSchema = z.object({
   hasMore: z.boolean(),
 });
 
+/** Socket payload shapes (PDF: upserted/deleted naming differs from /sync). */
+export const socketThreadUpsertedSchema = z.object({
+  thread: threadSchema,
+  syncToken: z.string().optional(),
+});
+
+export const socketThreadDeletedSchema = z.object({
+  id: z.string().min(1),
+  version: z.number().int().nonnegative(),
+  syncToken: z.string().optional(),
+});
+
+export const socketBalanceUpdatedSchema = z.object({
+  userBalance: z.number().int().nonnegative(),
+});
+
+export const socketUnauthorizedSchema = z
+  .object({
+    code: z.string().optional(),
+  })
+  .passthrough();
+
 export type ApiMeta = z.infer<typeof apiMetaSchema>;
 export type Thread = z.infer<typeof threadSchema>;
 export type ThreadDetail = z.infer<typeof threadDetailSchema>;
 export type AuthTokens = z.infer<typeof authTokensSchema>;
 export type SyncData = z.infer<typeof syncDataSchema>;
 export type SyncChange = z.infer<typeof syncChangeSchema>;
+export type SocketThreadUpsertedPayload = z.infer<typeof socketThreadUpsertedSchema>;
+export type SocketThreadDeletedPayload = z.infer<typeof socketThreadDeletedSchema>;
+export type SocketBalanceUpdatedPayload = z.infer<typeof socketBalanceUpdatedSchema>;
 
 export function normalizeThreadList(data: z.infer<typeof threadListDataSchema>): Thread[] {
   return Array.isArray(data) ? data : data.threads;

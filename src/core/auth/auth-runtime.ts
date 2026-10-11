@@ -5,17 +5,23 @@ import { clearPersistedUserData } from '@/core/database/database-runtime';
 import { logger } from '@/core/logging/logger';
 import { appQueryClient } from '@/core/query/query-client';
 import { createAuthApi } from '@/features/auth/api/auth-api';
+import { getCreditsStore } from '@/features/credits/credits-store';
 import { resetThreadActionQueue } from '@/features/inbox/actions/action-queue-runtime';
 
 let sessionManager: SessionManager | null = null;
 
 /**
- * Drop user-scoped Query cache, SQLite outbox/thread cache, and action queue.
+ * Drop user-scoped Query cache, SQLite outbox/thread cache, sockets, and action queue.
  */
 async function clearUserScopedRuntimeState(): Promise<void> {
+  // Dynamic import avoids a circular dependency with sync-runtime → auth-runtime.
+  const { stopSyncRuntime, __resetSyncRuntimeForTests } = await import('@/core/sync/sync-runtime');
+  stopSyncRuntime();
+  __resetSyncRuntimeForTests();
   appQueryClient.clear();
   await clearPersistedUserData();
   resetThreadActionQueue();
+  getCreditsStore().clear();
   logger.info('cleared user-scoped runtime state after session end');
 }
 

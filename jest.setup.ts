@@ -57,6 +57,17 @@ jest.mock('expo-sqlite', () => ({
   }),
 }));
 
+jest.mock('socket.io-client', () => ({
+  io: jest.fn(() => ({
+    connected: false,
+    auth: {},
+    on: jest.fn(),
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    removeAllListeners: jest.fn(),
+  })),
+}));
+
 jest.mock('@/core/logging/logger', () => ({
   logger: {
     debug: jest.fn(),
@@ -88,4 +99,16 @@ beforeEach(() => {
     __resetThreadActionQueueForTests: () => void;
   };
   __resetThreadActionQueueForTests();
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { __resetSyncRuntimeForTests } = require('@/core/sync/sync-runtime') as {
+    __resetSyncRuntimeForTests: () => void;
+  };
+  __resetSyncRuntimeForTests();
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { __resetCreditsStoreForTests } = require('@/features/credits/credits-store') as {
+    __resetCreditsStoreForTests: () => void;
+  };
+  __resetCreditsStoreForTests();
 });

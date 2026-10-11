@@ -136,3 +136,104 @@ export function mergeConfirmedThread(existing: Thread | undefined, incoming: Thr
   }
   return incoming;
 }
+
+export function getThreadVersionFromCaches(
+  queryClient: QueryClient,
+  threadId: string,
+): number | undefined {
+  return findThreadInCaches(queryClient, threadId)?.version;
+}
+
+/** Insert or replace a confirmed thread across mailbox caches (live sync / sockets). */
+export function upsertThreadInCaches(queryClient: QueryClient, thread: Thread): void {
+  const current = findThreadInCaches(queryClient, thread.id);
+  if (current && thread.version < current.version) {
+    return;
+  }
+
+  for (const view of MAILBOX_VIEWS) {
+    queryClient.setQueryData<InfiniteData<ThreadPage>>(inboxQueryKeys.mailbox(view), (existing) => {
+      if (!existing) {
+        if (!belongsInMailbox(view, thread)) {
+          return existing;
+        }
+        return {
+          pages: [{ threads: [thread], nextCursor: null }],
+          pageParams: [null],
+        };
+      }
+
+      const withoutThread = existing.pages.map((page) => ({
+        ...page,
+        threads: page.threads.filter((item) => item.id !== thread.id),
+      }));
+
+      if (!belongsInMailbox(view, thread)) {
+        const changed = existing.pages.some((page) =>
+          page.threads.some((item) => item.id === thread.id),
+        );
+        return changed ? { ...existing, pages: withoutThread } : existing;
+      }
+
+      const alreadyPresent = existing.pages.some((page) =>
+        page.threads.some((item) => item.id === thread.id),
+      );
+
+      if (alreadyPresent) {
+        return {
+          ...existing,
+          pages: existing.pages.map((page) => ({
+            ...page,
+            threads: page.threads.map((item) => (item.id === thread.id ? thread : item)),
+          })),
+        };
+      }
+
+      const [first, ...rest] = withoutThread;
+      if (!first) {
+        return {
+          ...existing,
+          pages: [{ threads: [thread], nextCursor: null }],
+        };
+      }
+      return {
+        ...existing,
+        pages: [{ ...first, threads: [thread, ...first.threads] }, ...rest],
+      };
+    });
+  }
+
+  queryClient.setQueryData<ThreadDetail>(threadDetailQueryKey(thread.id), (existing) => {
+    if (!existing) {
+      return existing;
+    }
+    if (thread.version < existing.version) {
+      return existing;
+    }
+    return { ...existing, ...thread, messages: existing.messages };
+  });
+}
+
+export function removeThreadFromCaches(queryClient: QueryClient, threadId: string): void {
+  for (const view of MAILBOX_VIEWS) {
+    queryClient.setQueryData<InfiniteData<ThreadPage>>(inboxQueryKeys.mailbox(view), (existing) => {
+      if (!existing) {
+        return existing;
+      }
+      const changed = existing.pages.some((page) =>
+        page.threads.some((thread) => thread.id === threadId),
+      );
+      if (!changed) {
+        return existing;
+      }
+      return {
+        ...existing,
+        pages: existing.pages.map((page) => ({
+          ...page,
+          threads: page.threads.filter((thread) => thread.id !== threadId),
+        })),
+      };
+    });
+  }
+  queryClient.setQueryData(threadDetailQueryKey(threadId), undefined);
+}

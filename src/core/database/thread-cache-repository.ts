@@ -17,6 +17,7 @@ export type ThreadCacheRepository = {
   saveThreadDetail: (detail: ThreadDetail) => Promise<void>;
   loadThreadDetail: (id: string) => Promise<ThreadDetail | null>;
   upsertThread: (thread: Thread) => Promise<void>;
+  removeThread: (threadId: string) => Promise<void>;
   applyFieldPatch: (
     threadId: string,
     patch: Partial<Pick<Thread, 'isRead' | 'isStarred' | 'isArchived' | 'version'>>,
@@ -217,6 +218,49 @@ export function createSqliteThreadCacheRepository(db: SQLiteDatabase): ThreadCac
       await rewriteMailboxMembership(thread);
     },
 
+    async removeThread(threadId) {
+      await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM threads WHERE id = ?', threadId);
+        await db.runAsync('DELETE FROM thread_details WHERE id = ?', threadId);
+        for (const view of MAILBOX_VIEWS) {
+          const pages = await db.getAllAsync<{
+            page_index: number;
+            next_cursor: string | null;
+            threads_json: string;
+          }>(
+            'SELECT page_index, next_cursor, threads_json FROM mailbox_pages WHERE view = ? ORDER BY page_index ASC',
+            view,
+          );
+          if (pages.length === 0) {
+            continue;
+          }
+          let changed = false;
+          const nextPages = pages.map((page) => {
+            const threads = threadSchema.array().parse(JSON.parse(page.threads_json));
+            const filtered = threads.filter((item) => item.id !== threadId);
+            if (filtered.length !== threads.length) {
+              changed = true;
+            }
+            return { ...page, threads: filtered };
+          });
+          if (!changed) {
+            continue;
+          }
+          await db.runAsync('DELETE FROM mailbox_pages WHERE view = ?', view);
+          for (const page of nextPages) {
+            await db.runAsync(
+              `INSERT INTO mailbox_pages (view, page_index, next_cursor, threads_json)
+               VALUES (?, ?, ?, ?)`,
+              view,
+              page.page_index,
+              page.next_cursor,
+              JSON.stringify(page.threads),
+            );
+          }
+        }
+      });
+    },
+
     async applyFieldPatch(threadId, patch) {
       const existing = await loadThreadRow(threadId);
       if (!existing) {
@@ -339,6 +383,24 @@ export function createMemoryThreadCacheRepository(): ThreadCacheRepository {
     async upsertThread(thread) {
       threads.set(thread.id, thread);
       rewriteMembership(thread);
+    },
+
+    async removeThread(threadId) {
+      threads.delete(threadId);
+      details.delete(threadId);
+      for (const view of MAILBOX_VIEWS) {
+        const existing = mailboxes.get(view);
+        if (!existing) {
+          continue;
+        }
+        mailboxes.set(view, {
+          ...existing,
+          pages: existing.pages.map((page) => ({
+            ...page,
+            threads: page.threads.filter((item) => item.id !== threadId),
+          })),
+        });
+      }
     },
 
     async applyFieldPatch(threadId, patch) {
