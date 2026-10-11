@@ -93,8 +93,8 @@
 | ID | Exact requirement | Source | User-visible behavior | Technical implications | Edge cases | Priority | Owner | Acceptance criteria | Test cases | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | DEV-01 | `POST /dev/reset` restores inbox and credits | p4 Tools | Known baseline for tests | Dev-only usage; never rate-limited | Accidental prod use (N/A sandbox) | P2 | test helpers / scripts | Reset returns account to baseline | Manual / scripted reset | done |
-| DEV-02 | `POST /dev/chaos` `{ failureRate, latencyMs }`; set both 0 to off | p4 Tools | App resilient under chaos | Document observed results | Leaving chaos on | P2 | chaos scripts + notes | Chaos exercised; restored to 0 | Chaos verification notes | partial |
-| DEV-03 | `POST /dev/burst` delivers 200 threads over 10s | p4 Tools | Inbox absorbs burst | Ordering, dedupe, scroll stability | Pagination during burst | P2 | performance notes | No dupes; order ok; no full-screen thrash | Burst observation record | partial |
+| DEV-02 | `POST /dev/chaos` `{ failureRate, latencyMs }`; set both 0 to off | p4 Tools | App resilient under chaos | Document observed results | Leaving chaos on | P2 | chaos scripts + notes | Chaos exercised; restored to 0 | Chaos verification notes | done (API smoke; see `docs/chaos-observations.md`) |
+| DEV-03 | `POST /dev/burst` delivers 200 threads over 10s | p4 Tools | Inbox absorbs burst | Ordering, dedupe, scroll stability | Pagination during burst | P2 | performance notes | No dupes; order ok; no full-screen thrash | Burst observation record | partial (API: no dupes in 50; UI scroll feel pending recording) |
 
 ### Account / environment facts (page 2)
 
@@ -102,7 +102,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ENV-01 | Base URL `https://sandbox3.staging.iamwarpspeed.com/v1` | p2 | API works | Typed config from env; no hardcoded secrets | Trailing slash mistakes | P0 | `core/config` | Requests hit correct host | Config unit | done |
 | ENV-02 | Real-time Socket.IO same host, path `/socket.io` | p2 | Live updates | Socket URL without `/v1` | Wrong path | P1 | realtime-client | Connects to host `/socket.io` | Connect smoke | done |
-| ENV-03 | ~3,000 threads in test account; background simulator delivers mail/changes | p2 | Busy inbox | Virtualization + sync required | Memory pressure | P0/P1 | inbox + sync | Usable with full account | Large list scroll | partial |
+| ENV-03 | ~3,000 threads in test account; background simulator delivers mail/changes | p2 | Busy inbox | Virtualization + sync required | Memory pressure | P0/P1 | inbox + sync | Usable with full account | Large list scroll | partial (burst+pagination API verified; UI scroll pending) |
 | ENV-04 | Login details emailed separately | p2 | Candidate can sign in | Credentials only in local `.env` (gitignored) | Accidental commit | P0 | `.env.example` | No credentials in repo | Secret scan / review | done |
 
 ---
@@ -148,7 +148,7 @@ These improve reliability/maintainability within the brief’s judgement focus. 
 | ID | Unknown | Impact | Proposed validation | Decision if blocked |
 | --- | --- | --- | --- | --- |
 | U-01 | Exact login credentials (emailed separately) | Cannot hit real API | Await credentials in local `.env` | Use fixtures for unit tests; block integration |
-| U-02 | Exact SSE wire format (event names, `data:` framing, id fields) | Summary parser | Capture raw stream from sandbox once credentials available | Conservative standard SSE: `event:` + `data:` JSON |
+| U-02 | Exact SSE wire format (event names, `data:` framing, id fields) | Summary parser | **Resolved 2026-10-11** — `event: delta`, `data: {"text":"..."}`, done terminates; `X-User-Balance` on response | Parser already compatible |
 | U-03 | Whether `X-User-Balance` is always present on summary responses | Credits accuracy | Observe headers during first stream | Fall back to socket / next meta |
 | U-04 | Whether balance has a monotonic version | Stale overwrite risk | Inspect payloads | Last-writer with session/request sequencing heuristic (document) |
 | U-05 | Whether list `GET /threads` includes messages or only metadata | Inbox perf | Inspect response | Never render bodies in list regardless |

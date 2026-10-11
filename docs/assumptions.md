@@ -55,7 +55,7 @@ Update this file when an assumption is confirmed or overturned by live API behav
 
 | ID | Ambiguity | Material? | Interim choice |
 | --- | --- | --- | --- |
-| AMB-01 | Exact SSE event names and JSON shapes beyond `{ text }` deltas | Yes for Phase 10 | Implement flexible parser; adjust after first live capture |
+| AMB-01 | Exact SSE event names and JSON shapes beyond `{ text }` deltas | **Confirmed 2026-10-11** | Live: `event: delta` + `data: {"text":"..."}`; stream ends with done; charged via `X-User-Balance` |
 | AMB-02 | Whether balance is monotonically versioned | Medium | Document receive-order policy |
 | AMB-03 | Whether mark-read should happen if opening while offline forever | Low | Queue outbox |
 | AMB-04 | Participant display when `name` missing | Low | Fall back to email |
@@ -64,7 +64,7 @@ Update this file when an assumption is confirmed or overturned by live API behav
 | AMB-07 | Does `expiresIn` clock start at issue time from server or client receive? | Low | Refresh on 401 primary; optional proactive refresh at 80% TTL |
 | AMB-08 | Starred view: archived starred threads included? | Low | Trust server view |
 | AMB-09 | FlashList version vs Expo expected pin | Low | Prefer working FlashList; exclude from expo fix if needed |
-| AMB-10 | Test credentials not in PDF | **Blocking for live API** | User must supply via `.env` — **ask when starting Slice 4** |
+| AMB-10 | Test credentials not in PDF | **Unblocked** | Supplied locally in gitignored `.env` (never committed); live reset/chaos/burst/summary exercised 2026-10-11 |
 
 ---
 

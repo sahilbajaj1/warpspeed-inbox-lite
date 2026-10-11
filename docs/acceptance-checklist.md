@@ -46,7 +46,7 @@ Legend: ✅ met in code/tests · ⚠️ partial / needs live · ❌ not met · �
 | P-08 / SUM-* | SSE summary, no auto-retry, 402 | ✅ | summary tests + panel |
 | P-09 / credits | meta + header + socket | ✅ | credits-store tests |
 | DEV-01 | Reset helper | ✅ | scripts + unit |
-| DEV-02 / DEV-03 | Chaos / burst observed | ⚠️ | tooling done; observations blank |
+| DEV-02 / DEV-03 | Chaos / burst observed | ⚠️ | API smoke recorded; UI scroll feel pending |
 
 ## P3 polish / submit
 
@@ -69,15 +69,18 @@ npm run lint
 npm test
 ```
 
-## Live gate (blocked without credentials)
+## Live gate
 
-1. Login with assigned account  
-2. Scroll inbox + switch Starred/Archived  
-3. Open thread → mark read → star/archive/unread  
-4. Airplane mode → action → reconnect flush  
-5. Summarise with credits visible  
-6. `sandbox:reset` / chaos hold / restore-to-0 / burst  
-7. Record ≤3m of working flows only  
+| Step | Status |
+| --- | --- |
+| Login with assigned account | ✅ API |
+| List/paginate inbox | ✅ API |
+| Open thread + PATCH star / idempotency | ✅ API |
+| Summarise with credits visible | ✅ API (`delta` SSE; balance drops) |
+| `sandbox:reset` / chaos / restore-to-0 / burst | ✅ API — `docs/chaos-observations.md` |
+| Scroll inbox UI + Starred/Archived tabs | ⬚ simulator |
+| Airplane mode → action → reconnect flush | ⬚ device |
+| Record ≤3m of working flows only | ⬚ pending |
 
 ---
 

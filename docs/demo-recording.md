@@ -1,7 +1,7 @@
 # Demo recording runbook (≤3 minutes)
 
 **PDF:** C-09 — screen recording of **working features only**  
-**Status:** Script ready; capture blocked until sandbox credentials + a green live smoke (`docs/acceptance-checklist.md` live gate).
+**Status:** Script ready; **API live smoke green** (2026-10-11). Remaining: human/simulator screen capture ≤3m.
 
 ---
 

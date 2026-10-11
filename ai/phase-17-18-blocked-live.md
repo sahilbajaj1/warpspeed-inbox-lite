@@ -5,7 +5,7 @@
 
 ## Status
 
-**Blocked** — no sandbox credentials available in this environment.
+**Superseded 2026-10-11** — credentials supplied locally; see `ai/phase-17-live-chaos-burst.md` and `ai/phase-18-recording-pending.md`.
 
 ## Planned when unblocked
 

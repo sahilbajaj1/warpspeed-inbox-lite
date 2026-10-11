@@ -48,9 +48,9 @@ See `docs/dev-tools.md`.
 
 ## What is not built / incomplete
 
-- Live chaos/burst **observations** (tooling ready; blocked on credentials) — `docs/chaos-observations.md`  
-- Screen recording ≤3 minutes (C-09) — script in `docs/demo-recording.md`  
+- Screen recording ≤3 minutes (C-09) — script in `docs/demo-recording.md` (API live smoke done; UI capture pending)  
 - Declared device/OS for the recording (C-03 finalize)  
+- Device airplane-mode outbox flush observation (code covered; not filmed)  
 - Maestro E2E; full VoiceOver / Dynamic Type device audit  
 - Compose / reply / search (out of scope)  
 - Perfect offline of the full ~3k corpus on first launch (caches fetched/opened data only)
@@ -86,7 +86,7 @@ See `docs/dev-tools.md`.
 
 ## AI usage
 
-Work was done with Cursor agents, phased 0→16. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims.
+Work was done with Cursor agents, phased 0→17. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims. Credentials live only in gitignored `.env`.
 
 ## Test results (automated)
 
@@ -96,18 +96,18 @@ npm run lint       → pass
 npm test           → pass (121)
 ```
 
-Live sandbox / chaos / burst: **not yet recorded** (no credentials in environment at implementation time).
+Live sandbox (2026-10-11 API smoke): reset OK; chaos latency/5xx observed then restored to 0; burst produced new threads with **no id dupes** in first 50; summary SSE `delta` events + credits 25→24. Details: `docs/chaos-observations.md`.
 
 ## What I would do next week
 
-1. Run reset/chaos/burst against the assigned account; fill `docs/chaos-observations.md`  
-2. Capture a ≤3m recording per `docs/demo-recording.md`  
-3. Validate FlashList blank-area feel under live burst  
-4. Probe live SSE event names if the flexible parser needs a narrow fix  
+1. Capture a ≤3m **UI** recording per `docs/demo-recording.md` on iOS Simulator or Android Emulator  
+2. Validate FlashList blank-area feel while scrolling during/after burst  
+3. Film one offline → reconnect outbox flush  
+4. Fill exact wall-clock hours for the submission package  
 
 ## Time
 
-Brief target: **8–12 focused hours**. Implementation spans Phases 0–16 as incremental commits on `master` (see git log). Phases 17–18 (live chaos notes + recording) await credentials. Honest wall-clock for the submission package will be filled after the live demo + recording; this README does **not** invent a finished live-demo hour count.
+Brief target: **8–12 focused hours**. Implementation spans Phases 0–17 as incremental commits on `master` (see git log). Phase 18 remaining item is the UI screen recording + platform declaration. Honest wall-clock for the submission package will be filled after that recording.
 
 ## Platform
 

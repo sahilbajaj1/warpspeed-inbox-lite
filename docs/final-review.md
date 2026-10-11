@@ -19,8 +19,8 @@
 
 | Risk | Mitigation today | Residual |
 | --- | --- | --- |
-| Live SSE field names differ | Flexible parser | Needs one real stream capture |
-| Burst blank cells / jank | FlashList drawDistance + getItemType | Needs live burst observation |
+| Live SSE field names differ | **Confirmed** `delta` + `{"text"}` | None for naming |
+| Burst blank cells / jank | FlashList drawDistance + getItemType | API: no id dupes in 50; UI feel still needs simulator |
 | Multi-device same account | Single-device assumption in docs | Refresh reuse → forced login |
 | Full 3k offline cache | Cache pages/details touched | First launch still needs network |
 | Dynamic Type >1.4× | Cap for dense rows | Extreme a11y sizes may clip |
@@ -46,11 +46,11 @@
 
 ---
 
-## Submission blockers (external)
+## Submission blockers (remaining)
 
-1. Assigned sandbox credentials  
-2. Fill `docs/chaos-observations.md` from real runs  
-3. Record ≤3m per `docs/demo-recording.md`  
-4. Declare platform + finalize wall-clock in README  
+1. ~~Assigned sandbox credentials~~ — local `.env` (gitignored)  
+2. ~~Fill `docs/chaos-observations.md`~~ — API live smoke recorded 2026-10-11  
+3. Record ≤3m UI demo per `docs/demo-recording.md` (human/simulator)  
+4. Declare platform + finalize wall-clock in README after recording  
 
-Until then: automated gate green; live gate open — see `docs/acceptance-checklist.md`.
+Automated + API live gates green; UI recording still open — see `docs/acceptance-checklist.md`.
