@@ -78,6 +78,7 @@ See `docs/dev-tools.md`.
 | `docs/resilience.md` | Uncertain writes / 429 / recovery |
 | `docs/a11y-perf.md` | Accessibility + FlashList notes |
 | `docs/demo-recording.md` | ≤3m recording shot list |
+| `docs/final-review.md` | Risks, cuts, submission blockers |
 | `docs/chaos-observations.md` | Live chaos/burst results (pending) |
 | `docs/dev-tools.md` | Sandbox CLI helpers |
 | `docs/html-email-rendering.md` | WebView HTML strategy |
@@ -85,7 +86,7 @@ See `docs/dev-tools.md`.
 
 ## AI usage
 
-Work was done with Cursor agents, phased 0→15. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims.
+Work was done with Cursor agents, phased 0→16. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims.
 
 ## Test results (automated)
 
@@ -106,7 +107,7 @@ Live sandbox / chaos / burst: **not yet recorded** (no credentials in environmen
 
 ## Time
 
-Brief target: **8–12 focused hours**. Implementation spans Phases 0–15 as incremental commits on `master` (see git log). Honest wall-clock for the submission package will be filled after the live demo + recording; this README does **not** invent a finished live-demo hour count.
+Brief target: **8–12 focused hours**. Implementation spans Phases 0–16 as incremental commits on `master` (see git log). Phases 17–18 (live chaos notes + recording) await credentials. Honest wall-clock for the submission package will be filled after the live demo + recording; this README does **not** invent a finished live-demo hour count.
 
 ## Platform
 
