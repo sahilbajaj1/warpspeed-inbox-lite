@@ -3,6 +3,15 @@ jest.mock('@shopify/flash-list', () => {
   return { FlashList: FlatList };
 });
 
+jest.mock('react-native-webview', () => {
+  const React = require('react') as typeof import('react');
+  const { View } = require('react-native') as typeof import('react-native');
+  return {
+    WebView: (props: Record<string, unknown>) =>
+      React.createElement(View, { testID: 'webview-mock', ...props }),
+  };
+});
+
 jest.mock('expo-router', () => {
   const React = require('react') as typeof import('react');
   return {
@@ -12,7 +21,8 @@ jest.mock('expo-router', () => {
     ),
     Redirect: ({ href }: { href: string }) =>
       React.createElement('Redirect', { testID: 'redirect', href }),
-    useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
+    useRouter: () => ({ replace: jest.fn(), push: jest.fn(), back: jest.fn() }),
+    useLocalSearchParams: () => ({}),
   };
 });
 

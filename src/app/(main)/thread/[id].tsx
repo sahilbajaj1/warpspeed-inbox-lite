@@ -1,34 +1,19 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
-import { AppButton } from '@/shared/components/AppButton';
+import { ThreadDetailScreen } from '@/features/threads/screens/ThreadDetailScreen';
 import { AppScreen } from '@/shared/components/AppScreen';
 import { AppText } from '@/shared/components/AppText';
-import { ScreenHeader } from '@/shared/components/ScreenHeader';
-import { spacingTokens } from '@/shared/theme/tokens';
 
-export default function ThreadPlaceholderScreen() {
-  const router = useRouter();
+export default function ThreadRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  return (
-    <AppScreen testID="thread-placeholder">
-      <ScreenHeader title="Thread" subtitle={typeof id === 'string' ? id : 'Unknown thread'} />
-      <AppText variant="body" tone="secondary" style={styles.body}>
-        Thread detail rendering arrives in the next phase.
-      </AppText>
-      <View style={styles.actions}>
-        <AppButton label="Back to inbox" variant="secondary" onPress={() => router.back()} />
-      </View>
-    </AppScreen>
-  );
-}
+  if (typeof id !== 'string' || id.length === 0) {
+    return (
+      <AppScreen>
+        <AppText tone="error">Missing thread id.</AppText>
+      </AppScreen>
+    );
+  }
 
-const styles = StyleSheet.create({
-  body: {
-    marginBottom: spacingTokens.lg,
-  },
-  actions: {
-    alignSelf: 'flex-start',
-  },
-});
+  return <ThreadDetailScreen threadId={id} />;
+}
