@@ -64,10 +64,13 @@ export function createThreadActionQueue(deps: {
   const inFlightKeys = new Set<string>();
   const listeners = new Set<Listener>();
   const pendingCache = new Map<string, Partial<Record<ThreadActionField, boolean>>>();
+  const failedCache = new Map<string, ThreadActionCommand[]>();
   const EMPTY_PENDING: Partial<Record<ThreadActionField, boolean>> = {};
+  const EMPTY_FAILED: ThreadActionCommand[] = [];
 
   function emit(): void {
     pendingCache.clear();
+    failedCache.clear();
     for (const listener of listeners) {
       listener();
     }
@@ -291,9 +294,16 @@ export function createThreadActionQueue(deps: {
     },
 
     getFailedCommands(threadId) {
-      return [...commands.values()].filter(
+      const cached = failedCache.get(threadId);
+      if (cached) {
+        return cached;
+      }
+      const failed = [...commands.values()].filter(
         (command) => command.threadId === threadId && command.status === 'failed',
       );
+      const stable = failed.length === 0 ? EMPTY_FAILED : failed;
+      failedCache.set(threadId, stable);
+      return stable;
     },
 
     peek(threadId, field) {
