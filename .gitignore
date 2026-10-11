@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Expo / native
+.expo/
+dist/
+web-build/
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Env & secrets (never commit credentials)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs & OS
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+*.log
+
+# Tests / coverage
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Temporary
+*.swp
+*.swo
+.turbo/
