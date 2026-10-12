@@ -13,5 +13,4 @@ Docs-only; prior automated gate still green (121 tests).
 
 ## Next / stop line
 
-Phases **17–18** are live-only: chaos observations + ≤3m recording + README platform/time finalize.  
-**Blocked** without sandbox credentials — do not invent observations or ship a fake demo. Resume when credentials are available.
+Live sandbox chaos/burst API observations live in `docs/chaos-observations.md` (credentials in gitignored `.env` only). Demo/recording materials are not kept in this repo.

@@ -50,7 +50,7 @@
 
 1. ~~Assigned sandbox credentials~~ — local `.env` (gitignored)  
 2. ~~Fill `docs/chaos-observations.md`~~ — API live smoke recorded 2026-10-11  
-3. ~~Record ≤3m UI demo~~ — `docs/demo-assets/inbox-lite-demo.mp4` (~17s)  
-4. ~~Declare platform~~ — iPhone 16 / iOS 18.5 / Expo Go 57 in README  
+3. ~~Declare platform~~ — iPhone 16 / iOS 18.5 / Expo Go 57 in README  
+4. Screen recording / demo assets — **removed from repo** (not part of local submission materials)
 
-Optional follow-ups (not blockers): filmed offline flush, Maestro, move providers out of `src/app/`.
+Optional follow-ups (not blockers): device offline flush observation, Maestro.

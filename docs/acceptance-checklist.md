@@ -1,7 +1,7 @@
 # Acceptance checklist — Inbox Lite
 
 **Phase:** 14 (acceptance gate / matrix sync)  
-**Rule:** Mark only what is true. Live sandbox rows stay open until credentials + recording exist.
+**Rule:** Mark only what is true. Live sandbox API rows are filled from observed runs only.
 
 Legend: ✅ met in code/tests · ⚠️ partial / needs live · ❌ not met · ⬚ blocked (credentials)
 
@@ -19,7 +19,7 @@ Legend: ✅ met in code/tests · ⚠️ partial / needs live · ❌ not met · �
 | P-07 | Star / archive / unread feel instant | ✅ | optimistic queue + coalescing tests |
 | C-01 | Expo SDK 57 + TS strict | ✅ | `package.json`, `tsc` |
 | C-02 | Expo Router navigation | ✅ | `src/app/` |
-| C-03 | Declare tested platform | ⚠️ | README intent; exact OS pending recording |
+| C-03 | Declare tested platform | ✅ | README: iPhone 16 / iOS 18.5 / Expo Go 57 |
 | C-10 | No custom backend | ✅ | sandbox base URL only |
 | A-01 / A-02 | Envelopes parsed safely | ✅ | response-parser / errors tests |
 | AUTH-01…06 | Login, refresh single-flight, logout, bearer, reuse fail | ✅ | session/refresh tests |
@@ -56,8 +56,8 @@ Legend: ✅ met in code/tests · ⚠️ partial / needs live · ❌ not met · �
 | C-05 | Honest time | ⚠️ | finalize at submission |
 | C-06 | Incremental git history | ✅ | phase commits on `master` |
 | C-07 | `ai/` present | ✅ | phase-0…14 notes |
-| C-08 | README sections | ⚠️ | filled; time/recording TBD |
-| C-09 | ≤3m recording | ❌ | blocked on live demo |
+| C-08 | README sections | ⚠️ | filled; time TBD |
+| C-09 | ≤3m recording | ⬚ | deferred — demo/recording artifacts removed |
 
 ---
 
@@ -78,17 +78,15 @@ npm test
 | Open thread + PATCH star / idempotency | ✅ API |
 | Summarise with credits visible | ✅ API (`delta` SSE; balance drops) |
 | `sandbox:reset` / chaos / restore-to-0 / burst | ✅ API — `docs/chaos-observations.md` |
-| Scroll inbox UI + Starred/Archived tabs | ✅ simulator screenshots / recording |
+| Scroll inbox UI + Starred/Archived tabs | ✅ simulator smoke |
 | Open thread detail + actions UI | ✅ simulator (fixed update-loop bug) |
-| Airplane mode → action → reconnect flush | ⬚ not filmed |
-| Record ≤3m of working flows only | ✅ `docs/demo-assets/inbox-lite-demo.mp4` ~17s |
+| Airplane mode → action → reconnect flush | ⬚ not observed on device |
 
 ---
 
 ## Cut / incomplete (honest)
 
-- Live chaos/burst observation tables  
-- Submission recording + declared device OS  
+- Device offline flush observation  
 - Maestro E2E  
 - Full Dynamic Type / VoiceOver device audit  
 - Caching the entire ~3k corpus offline on first launch  

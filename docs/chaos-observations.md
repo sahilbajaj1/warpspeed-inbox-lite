@@ -13,7 +13,7 @@ Tooling: `docs/dev-tools.md`, `npm run sandbox:*`, plus an ad-hoc authenticated 
 | --- | --- |
 | Date | 2026-10-11 |
 | Account | assigned sandbox account (credentials only in local gitignored `.env`) |
-| Platform | Node 22 API client against sandbox (app UI recording still separate — see `docs/demo-recording.md`) |
+| Platform | Node 22 API client against sandbox |
 | App build | API smoke (not Expo Go for these numbers) |
 | API base | `https://sandbox3.staging.iamwarpspeed.com/v1` |
 
@@ -67,7 +67,7 @@ Notes:
 | Pagination still coherent | **Yes** pre-burst: page2 overlap with page1 ids = **0**; post-burst first page filled with newer ids vs pre-burst sample |
 | Socket/sync catch-up after burst | **`GET /sync?since=`** → 200, `hasMore=false`, new sync token present (~1138ms); change payload non-empty |
 
-Notes: After burst wait, first page of 50 were all new relative to the pre-burst id set (simulator delivery working). UI scroll feel still needs a simulator pass when recording.
+Notes: After burst wait, first page of 50 were all new relative to the pre-burst id set (simulator delivery working). UI scroll feel under burst was not measured.
 
 ---
 
@@ -87,6 +87,6 @@ Notes: After burst wait, first page of 50 were all new relative to the pre-burst
 - [x] Run reset → chaos hold → restore → note results  
 - [x] Run burst + sync catch-up  
 - [x] Update this file with dated observations  
-- [ ] Expo Simulator UI scroll/feel under burst (for recording)  
+- [ ] Expo Simulator UI scroll/feel under burst  
 - [ ] Airplane-mode outbox flush on device  
-- [ ] Capture ≤3m screen recording (`docs/demo-recording.md`)  
+

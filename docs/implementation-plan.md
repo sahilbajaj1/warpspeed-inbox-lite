@@ -13,7 +13,7 @@
 | **P0** | Foundation, authentication, inbox, thread details, basic actions |
 | **P1** | Token refresh correctness, optimistic updates, realtime sync, offline persistence |
 | **P2** | AI streaming, credits, resilience, chaos/burst testing |
-| **P3** | Accessibility, performance refinements, documentation, recording |
+| **P3** | Accessibility, performance refinements, documentation |
 
 PDF requirements remain the target; priority only orders work and guides cuts.
 
@@ -35,7 +35,7 @@ PDF requirements remain the target; priority only orders work and guides cuts.
 | 9 | Realtime + sync | P1 | 1.25h | Socket + catch-up + version/tombstones |
 | 10–11 | Summary + credits | P2 | 1.0h | SSE stream + shared balance |
 | 12–14 | Resilience + chaos/burst | P2 | 0.75h | Observed notes; restore chaos to 0 |
-| 15–18 | Perf/a11y/review/docs/demo | P3 | 1.0h | README, `ai/`, recording, acceptance gate |
+| 15–16 | Perf/a11y/review/docs | P3 | 1.0h | README, `ai/`, acceptance gate |
 
 Sum ≈ **12.25h** — intentional over-plan; cut from P3 then thin P2 polish if needed. Protect P0+P1 correctness.
 
@@ -102,9 +102,9 @@ Sum ≈ **12.25h** — intentional over-plan; cut from P3 then thin P2 polish if
 - **PDF:** P-08, P-09, SUM-*, RT-04
 - **Acceptance:** Stream renders; 402 handled; no auto-retry; balance updates
 
-### Slice 11 — Chaos/burst + docs/demo
-- **PDF:** DEV-*, C-06…C-09
-- **Acceptance:** Notes with observed results; README honest; recording ≤3m
+### Slice 11 — Chaos/burst + docs
+- **PDF:** DEV-*, C-06…C-08
+- **Acceptance:** Notes with observed results; README honest
 
 ---
 

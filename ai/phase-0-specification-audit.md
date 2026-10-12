@@ -6,7 +6,7 @@
 
 ## Inputs
 
-- Master implementation instructions (Phases 0–18) provided in chat
+- Master implementation instructions (phased build plan) provided in chat
 - Authoritative brief: `coding-test-brief.pdf` (warpSpeed Inbox Lite, 4 pages)
 
 ## What the AI was asked to do

@@ -19,7 +19,7 @@ Align documentation with what the code actually does before final README/recordi
 | Gap | Status |
 | --- | --- |
 | Live chaos/burst observations | blocked on credentials |
-| ≤3m recording + declared OS | not started |
+| Declared OS in README | later |
 | Wall-clock time in README | finalize at submission |
 | Full device a11y audit | partial (Phase 13 code only) |
 

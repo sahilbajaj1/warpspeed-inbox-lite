@@ -21,9 +21,9 @@
 
 ## A. Executive summary
 
-Inbox Lite is a **feature-complete Expo SDK 57 TypeScript client** for the warpSpeed sandbox inbox API: auth with single-flight refresh, cursor mailboxes, optimistic durable mutations, SQLite outbox/cache, Socket.IO + `/sync` catch-up, SSE summaries/credits, and documented chaos/burst API observations plus a ≤3m simulator recording.
+Inbox Lite is a **feature-complete Expo SDK 57 TypeScript client** for the warpSpeed sandbox inbox API: auth with single-flight refresh, cursor mailboxes, optimistic durable mutations, SQLite outbox/cache, Socket.IO + `/sync` catch-up, SSE summaries/credits, and documented chaos/burst API observations.
 
-**Verdict direction:** **READY WITH DOCUMENTED LIMITATIONS** after audit fixes (see §H). No open P0. Remaining gaps are verification depth (device offline film, list profiling under live burst UI) and honesty about wall-clock vs focused hours — not missing core PDF product surfaces.
+**Verdict direction:** **READY WITH DOCUMENTED LIMITATIONS** after audit fixes (see §H). No open P0. Remaining gaps are verification depth (device offline observation, list profiling under live burst UI) and honesty about wall-clock vs focused hours — not missing core PDF product surfaces.
 
 Automated gate executed this audit: `typecheck` pass, `lint` pass, `npm test` **122** pass.
 
@@ -45,13 +45,13 @@ Automated gate executed this audit: `typecheck` pass, `lint` pass, `npm test` **
 | P-10 | Offline usable + queue | SQLite outbox/cache | Unit hydrate/replay; **device airplane film missing** | PARTIALLY IMPLEMENTED (code yes / device film no) | P1→doc |
 | C-01 | Expo + TS | SDK 57 | typecheck VERIFIED | VERIFIED | — |
 | C-02 | Expo Router | `src/app` | Smoke | VERIFIED | — |
-| C-03 | Declare platform | README iPhone 16 / iOS 18.5 | Recording VERIFIED | VERIFIED | — |
+| C-03 | Declare platform | README iPhone 16 / iOS 18.5 | README VERIFIED | VERIFIED | — |
 | C-04 | Usable / a11y basics | Phase 13 | Component a11y tests | PARTIALLY (no full VO audit) | P2 |
 | C-05 | Honest time | README | Stated; no invented hour count | PARTIALLY | P3 |
 | C-06 | Full git history | Incremental commits | `git log` VERIFIED | VERIFIED | — |
-| C-07 | `ai/` materials | phase-0…18 | Present VERIFIED | VERIFIED | — |
+| C-07 | `ai/` materials | phase-0…16 (+ chaos notes) | Present VERIFIED | VERIFIED | — |
 | C-08 | README sections | README | Present VERIFIED | VERIFIED | — |
-| C-09 | ≤3m recording | `docs/demo-assets/inbox-lite-demo.mp4` ~17s | Duration parse VERIFIED | VERIFIED | — |
+| C-09 | ≤3m recording | — | Demo/recording artifacts removed from repo | DEFERRED | P3 |
 | C-10 | No custom backend | Sandbox URL only | Code inspection + live API | VERIFIED | — |
 | AUTH-01…06 | Login/refresh/logout/bearer/reuse | `session-manager` + SecureStore | Concurrent refresh + reuse tests VERIFIED; **transient refresh keep-token fixed this audit** | VERIFIED | — |
 | THR-01…06 | Threads/PATCH/idempotency | threads API + outbox | Unit + live PATCH idempotency | VERIFIED | — |
@@ -92,7 +92,7 @@ Full ID inventory remains in `docs/requirements-matrix.md` (synced Phase 14; not
 | API logs path/method only (no tokens) | — | OK |
 | Logout clears Query + SQLite + queue + credits + stops sync | — | OK |
 | HTML WebView: JS off, nav blocked, sanitizer | — | OK; tightened `originWhitelist` this audit |
-| Metro `/__dev/sandbox-creds` exposed creds whenever `.env` set | P1 | **Fixed** — requires `EXPO_PUBLIC_DEMO_AUTO_LOGIN=1` |
+| Demo Metro `/__dev/sandbox-creds` auto-login path | P1 | **Removed** — no longer present in `metro.config.js` / login |
 | Transient refresh failures previously wiped refresh token | P1 | **Fixed** — only auth failures clear session |
 | PDF absent from repo (process) | P3 | Documented; matrix used as stand-in |
 
@@ -110,7 +110,7 @@ No credentials committed (`.env` gitignored; verified).
 | Credits | Remote-only (no local −1) |
 | Foreground recovery | Outbox flush + sync catch-up |
 
-**Residual:** Device airplane-mode → kill → reopen → reconnect not filmed this engagement (code paths unit-covered).
+**Residual:** Device airplane-mode → kill → reopen → reconnect not observed on device this engagement (code paths unit-covered).
 
 ---
 
@@ -142,8 +142,8 @@ npm test           → pass (122 tests, 36 suites)
 | Env | Used |
 | --- | --- |
 | Node 22.16.0 / Jest | Yes |
-| Live sandbox API | Yes (Phase 17 notes; chaos-off rechecked) |
-| iPhone 16 Simulator / Expo Go 57 | Yes (Phase 18 recording) |
+| Live sandbox API | Yes (`docs/chaos-observations.md`; chaos-off rechecked) |
+| iPhone 16 Simulator / Expo Go 57 | Yes (manual smoke) |
 | Android | Not exercised |
 
 ### Limitations
@@ -159,15 +159,15 @@ npm test           → pass (122 tests, 36 suites)
 | ID | Sev | Defect | Root cause | Fix | Regression |
 | --- | --- | --- | --- | --- | --- |
 | AUD-01 | P1 | Transient refresh failure cleared SecureStore refresh token | `clearSession` on all refresh errors | Keep token unless unauthorized/reuse | `session-manager.test.ts` updated (+1) |
-| AUD-02 | P1 | Metro always served sandbox password if env present | Ungated middleware | Gate on `EXPO_PUBLIC_DEMO_AUTO_LOGIN=1` | Manual: endpoint 404 when flag 0 |
-| AUD-03 | P1 | Thread detail max update depth (pre-existing, Phase 18) | `useSyncExternalStore` new `{}`/`[]` | Stable empties + callbacks | Already shipped `5d22f1a`; still green |
+| AUD-02 | P1 | Metro always served sandbox password if env present | Ungated demo middleware | Removed demo creds endpoint + auto-login | Code inspection |
+| AUD-03 | P1 | Thread detail max update depth | `useSyncExternalStore` new `{}`/`[]` | Stable empties + callbacks | Already shipped `5d22f1a`; still green |
 | AUD-04 | P2 | Providers under `src/app` → Router warnings | Misplaced modules | Moved to `src/providers/` | typecheck/tests |
 | AUD-05 | P2 | WebView `originWhitelist=['*']` overly broad | Convenience default | Restrict to about:blank/srcdoc | Inspection |
-| AUD-06 | P2 | Offline device film missing | Time/automation limits | Documented limitation | N/A |
+| AUD-06 | P2 | Offline device observation missing | Time/automation limits | Documented limitation | N/A |
 | AUD-07 | P3 | README index said chaos notes pending | Doc drift | Fixed index | N/A |
 
 **Open P0:** none  
-**Open P1 product defects:** none (offline device film is verification gap, not a known code defect)
+**Open P1 product defects:** none (offline device observation is verification gap, not a known code defect)
 
 ---
 
@@ -177,7 +177,7 @@ npm test           → pass (122 tests, 36 suites)
 2. Credits last-writer-wins without server version — disclosed in assumptions.
 3. Live mailbox “new mail appears without interaction” not stopwatch-verified in this audit.
 4. Android never run.
-5. Expo Go first-run sheet may appear in demo video — product still visible.
+5. Screen recording / demo assets intentionally removed from this repo.
 
 ---
 
@@ -190,7 +190,7 @@ npm test           → pass (122 tests, 36 suites)
 | Git history incremental | ✅ |
 | `ai/` working materials | ✅ |
 | README honest | ✅ |
-| Recording ≤3m | ✅ ~17s |
+| Recording ≤3m | ⬚ deferred / removed from repo |
 | No secrets in git | ✅ |
 | PDF in repo | ❌ missing file (not required for run; helpful for reviewers) |
 

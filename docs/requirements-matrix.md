@@ -34,8 +34,8 @@
 | C-05 | 8–12h focused; 5 calendar days; report time honestly | p1 Time | N/A | Scope trade-offs; incomplete items explicit | Over-scoping | P3 | README / `ai/` | Honest time + incomplete list in README | N/A | partial |
 | C-06 | Submit code + full git history (no squash/rewrite) | p4 What to submit | N/A | Incremental commits | Accidental amend/rebase | P3 | git | History shows incremental slices | Review log | done |
 | C-07 | `ai/` folder with uncurated AI working material | p4 What to submit | N/A | Preserve transcripts/plans/rules | Credential leakage in exports | P3 | `ai/` | `ai/` present; secrets redacted only | Manual review | done |
-| C-08 | README covering run, built/not built, decisions, AI, next week, time | p4 What to submit | N/A | Final docs phase | Incomplete claims | P3 | README | All README sections filled honestly | Manual review | partial (sections present; wall-clock + recording TBD) |
-| C-09 | Screen recording ≤3 minutes of working features only | p4 What to submit | Demo of real features | Record after verification | Demo of unfinished features | P3 | submission | Recording ≤3m; only working flows | Manual | done (`docs/demo-assets/inbox-lite-demo.mp4` ~17s) |
+| C-08 | README covering run, built/not built, decisions, AI, next week, time | p4 What to submit | N/A | Final docs phase | Incomplete claims | P3 | README | All README sections filled honestly | Manual review | partial (sections present; wall-clock framing noted) |
+| C-09 | Screen recording ≤3 minutes of working features only | p4 What to submit | Demo of real features | Record after verification | Demo of unfinished features | P3 | submission | Recording ≤3m; only working flows | Manual | deferred (demo/recording artifacts removed from repo) |
 | C-10 | Do not invent a custom backend; use supplied API | p1 The test API | App talks to sandbox | Base URL fixed; no local mock server as product | Dev fixtures for unit tests only | P0 | `core/api` | All runtime networking hits sandbox | Integration against API | done |
 
 ### API conventions (page 2)
@@ -94,7 +94,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | DEV-01 | `POST /dev/reset` restores inbox and credits | p4 Tools | Known baseline for tests | Dev-only usage; never rate-limited | Accidental prod use (N/A sandbox) | P2 | test helpers / scripts | Reset returns account to baseline | Manual / scripted reset | done |
 | DEV-02 | `POST /dev/chaos` `{ failureRate, latencyMs }`; set both 0 to off | p4 Tools | App resilient under chaos | Document observed results | Leaving chaos on | P2 | chaos scripts + notes | Chaos exercised; restored to 0 | Chaos verification notes | done (API smoke; see `docs/chaos-observations.md`) |
-| DEV-03 | `POST /dev/burst` delivers 200 threads over 10s | p4 Tools | Inbox absorbs burst | Ordering, dedupe, scroll stability | Pagination during burst | P2 | performance notes | No dupes; order ok; no full-screen thrash | Burst observation record | partial (API: no dupes in 50; UI scroll feel pending recording) |
+| DEV-03 | `POST /dev/burst` delivers 200 threads over 10s | p4 Tools | Inbox absorbs burst | Ordering, dedupe, scroll stability | Pagination during burst | P2 | performance notes | No dupes; order ok; no full-screen thrash | Burst observation record | partial (API: no dupes in 50; UI scroll feel not measured) |
 
 ### Account / environment facts (page 2)
 
@@ -206,4 +206,4 @@ These improve reliability/maintainability within the brief’s judgement focus. 
 
 Every user-facing bullet on PDF page 1 (P-01…P-10) and every documented endpoint/event is listed above. Engineering recommendations (B) and optional work (C) are explicitly separated from PDF obligations (A).
 
-**Phase 14 sync:** statuses above reflect code + automated tests as of 2026-10-11. Live sandbox verification (chaos/burst observations, recording, declared device OS) remains open — see `docs/acceptance-checklist.md`.
+**Phase 14 sync:** statuses above reflect code + automated tests as of 2026-10-11. Live sandbox chaos/burst API observations and declared device OS are in README / `docs/chaos-observations.md`. Demo recording artifacts are not kept in this repo.

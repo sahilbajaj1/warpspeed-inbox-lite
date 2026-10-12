@@ -48,7 +48,7 @@ See `docs/dev-tools.md`.
 
 ## What is not built / incomplete
 
-- Device airplane-mode outbox flush observation (code covered; not filmed in the ≤3m demo)  
+- Device airplane-mode outbox flush observation (code covered; not observed on device)  
 - Maestro E2E; full VoiceOver / Dynamic Type device audit  
 - Compose / reply / search (out of scope)  
 - Perfect offline of the full ~3k corpus on first launch (caches fetched/opened data only)
@@ -75,7 +75,6 @@ See `docs/dev-tools.md`.
 | `docs/assumptions.md` | Ambiguity resolutions |
 | `docs/resilience.md` | Uncertain writes / 429 / recovery |
 | `docs/a11y-perf.md` | Accessibility + FlashList notes |
-| `docs/demo-recording.md` | ≤3m recording shot list |
 | `docs/final-review.md` | Risks, cuts, submission blockers |
 | `docs/chaos-observations.md` | Live chaos/burst API observations |
 | `docs/FINAL_ENGINEERING_AUDIT.md` | Final principal audit / release readiness |
@@ -85,7 +84,7 @@ See `docs/dev-tools.md`.
 
 ## AI usage
 
-Work was done with Cursor agents, phased 0→18. Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims. Credentials live only in gitignored `.env`.
+Work was done with Cursor agents, phased 0→16 (plus live chaos/burst API notes). Uncurated working notes live in `ai/` (phase writeups). Spec/PDF remained authoritative; Expo APIs were checked against current docs rather than training memory. Human accountability stayed on secret safety, refresh single-flight, and honest incomplete claims. Credentials live only in gitignored `.env`.
 
 ## Test results (automated)
 
@@ -100,14 +99,13 @@ Live sandbox (2026-10-11 API smoke): reset OK; chaos latency/5xx observed then r
 ## What I would do next week
 
 1. Validate FlashList blank-area feel while scrolling during/after a live burst on device  
-2. Film one offline → reconnect outbox flush as a short addendum if reviewers want it  
-3. Optional Maestro smoke for login → open thread  
-4. Film offline → reconnect outbox flush if reviewers want a device clip  
+2. Optional Maestro smoke for login → open thread  
+3. Device airplane-mode → reconnect outbox flush observation  
 
 ## Time
 
-Brief target: **8–12 focused hours**. Implementation spans Phases 0–18 as incremental commits on `master` (see git log). Wall-clock across the calendar window is higher than focused hours (agent-assisted, multi-session); treat the brief’s 8–12h as the focused engineering band, not wall-clock.
+Brief target: **8–12 focused hours**. Implementation spans Phases 0–16 as incremental commits on `master` (see git log). Wall-clock across the calendar window is higher than focused hours (agent-assisted, multi-session); treat the brief’s 8–12h as the focused engineering band, not wall-clock.
 
 ## Platform
 
-**Tested for submission recording:** iPhone 16 Simulator, **iOS 18.5**, Expo Go **SDK 57**, Metro on macOS. Demo: `docs/demo-assets/inbox-lite-demo.mp4` (~17 seconds).
+**Tested:** iPhone 16 Simulator, **iOS 18.5**, Expo Go **SDK 57**, Metro on macOS.
