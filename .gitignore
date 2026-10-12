@@ -16,8 +16,7 @@ ios/
 
 # Env & secrets (never commit credentials)
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
 
 # Logs & OS
